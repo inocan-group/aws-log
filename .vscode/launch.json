@@ -1,0 +1,15 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Current Mocha [ts] test file",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceRoot}/node_modules/.bin/_mocha",
+      "args": ["--no-timeouts", "--compilers", "ts:ts-node/register", "${relativeFile}"],
+
+      "cwd": "${workspaceRoot}",
+      "protocol": "inspector"
+    }
+  ]
+}

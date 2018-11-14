@@ -1,0 +1,14 @@
+{
+  "generator-typescript-microservice": {
+    "promptValues": {
+      "appName": "log-shipper",
+      "serverless": "serverless",
+      "features": [
+        "wallaby"
+      ],
+      "license": "Proprietary",
+      "coverage": [],
+      "social": []
+    }
+  }
+}
