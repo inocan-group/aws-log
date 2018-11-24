@@ -2693,9 +2693,10 @@ serverless-pseudo-parameters@^2.2.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/serverless-pseudo-parameters/-/serverless-pseudo-parameters-2.2.0.tgz#e195af2f6129b9bfe0699ea07aed7ed02a3edec8"
 
-serverless-step-functions@^1.8.0:
-  version "1.8.0"
-  resolved "https://registry.yarnpkg.com/serverless-step-functions/-/serverless-step-functions-1.8.0.tgz#c8a1749931e6b808220aa6c45c031b9583fe47bb"
+serverless-step-functions@1.6.1:
+  version "1.6.1"
+  resolved "https://registry.yarnpkg.com/serverless-step-functions/-/serverless-step-functions-1.6.1.tgz#1a4d54000f74280496e8430e5dcedcde88cde455"
+  integrity sha512-6NkEUusOQg6U84UGU4sFtXZMegLJsf261CbbPfL/V63AEn4h4te10yXkerC1Xm8+G2DhaOWKxID4jkyDMzUrsw==
   dependencies:
     aws-sdk "^2.282.1"
     bluebird "^3.4.0"
