@@ -1,8 +1,8 @@
 // tslint:disable:no-invalid-template-strings
 import { IServerlessProvider, IServerlessIAMRole } from "common-types";
 
-const ACCOUNT_ID = "xxxxxxxxxx";
-const REGION = "us-east-1";
+const ACCOUNT_ID = "7419-7656-9717";
+const REGION = "us-west-1";
 
 const iamRoleStatements: IServerlessIAMRole[] = [
   {
@@ -10,6 +10,11 @@ const iamRoleStatements: IServerlessIAMRole[] = [
     Effect: "Allow",
     Action: ["xray:PutTraceSegments", "xray:PutTelemetryRecords"],
     Resource: ["*"]
+  },
+  {
+    Effect: "Allow",
+    Action: ["ssm:GetParameter", "ssm:GetParametersByPath"],
+    Resource: [`arn:aws:ssm:${REGION}*`]
   },
   {
     // PERMISSIONS FOR STEP FUNCTIONS

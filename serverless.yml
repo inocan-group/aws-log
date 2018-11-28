@@ -1,5 +1,42 @@
 service: log-shipper
 custom:
-  stage: "${opt:stage, self:provider.stage}"
-  region: "${opt:region, self:provider.region}"
-
+  stage: '${opt:stage, self:provider.stage}'
+  region: '${opt:region, self:provider.region}'
+plugins:
+  - serverless-pseudo-parameters
+  - serverless-step-functions
+functions:
+  logShipper:
+    handler: lib/handlers/log-shipper.handler
+stepFunctions: {}
+provider:
+  name: aws
+  runtime: nodejs8.10
+  stage: prod
+  region: us-west-1
+  environment: '${file(serverless-config/env.yml):${self:custom.stage}}'
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - 'xray:PutTraceSegments'
+        - 'xray:PutTelemetryRecords'
+      Resource:
+        - '*'
+    - Effect: Allow
+      Action:
+        - 'ssm:GetParameter'
+        - 'ssm:GetParametersByPath'
+      Resource:
+        - 'arn:aws:ssm:us-west-1*'
+    - Effect: Allow
+      Action:
+        - 'states:ListStateMachines'
+        - 'states:CreateActivity'
+        - 'states:StartExecution'
+        - 'states:ListExecutions'
+        - 'states:DescribeExecution'
+        - 'states:DescribeStateMachineForExecution'
+        - 'states:GetExecutionHistory'
+      Resource:
+        - 'arn:aws:states:us-west-1:7419-7656-9717:stateMachine:*'
+        - 'arn:aws:states:us-west-1:7419-7656-9717:execution:*:*'

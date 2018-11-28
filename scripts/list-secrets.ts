@@ -45,11 +45,11 @@ const config: IServerlessConfig = yaml.safeLoad(
 
         console.log(
           `${chalk.green.bold(param.Name)}: ${chalk.italic.grey(
-            param.Description
+            param.Description ? param.Description : ""
           )}${chalk.reset(" ")}`
         );
 
-        console.log(`  - v${param.Version} of type ${chalk.yellow.bold(param.Type)}`);
+        console.log(`  - v${param.Version ? param.Version : 1} of type ${chalk.yellow.bold(param.Type)}`);
         console.log(
           `  - Last modified on ${chalk.bold.yellow(datetime)} by ${chalk.yellow.bold(
             who

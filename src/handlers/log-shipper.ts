@@ -5,6 +5,7 @@ import { gunzip } from "zlib";
 import axios from "axios";
 import * as parse from "../shared/log-parser";
 import { Parallel } from "wait-in-parallel";
+import { getParameter } from "../shared/secrets";
 const gunzipAsync = promisify<Buffer, Buffer>(gunzip);
 
 enum LOGZIO_PORTS {
@@ -16,14 +17,6 @@ enum LOGZIO_PORTS {
 
 const PORT: number = LOGZIO_PORTS.BULK_HTTPS;
 const HOST: string = process.env.LOG_HOST || "https://listener.logz.io";
-const TOKEN: string = process.env.LOG_TOKEN;
-const ENDPOINT: string = `https://${HOST}:${PORT}?token=${TOKEN}`;
-
-if (!TOKEN) {
-  throw new Error(
-    `No TOKEN for Logz.io was found as ENV variable "LOG_TOKEN"; please set and retry.`
-  );
-}
 
 export async function handler(
   event: IDictionary,
@@ -32,10 +25,20 @@ export async function handler(
 ) {
   context.callbackWaitsForEmptyEventLoop = false;
   try {
+    const TOKEN: string = (await getParameter('LOG_TOKEN')).Value;
+
+    if (!TOKEN) {
+      throw new Error(
+        `No TOKEN for Logz.io was found as ENV variable "LOG_TOKEN"; please set and retry.`
+      );
+    }
+
+    const ENDPOINT: string = `${HOST}:${PORT}?token=${TOKEN}`;
+    console.log(`Endpoint: ${ENDPOINT}`);
     const payload = new Buffer(event.awslogs.data, "base64");
     const json = (await gunzipAsync(payload)).toString("utf-8");
     const logEvent: ICloudWatchEvent = JSON.parse(json);
-    await processAll(logEvent.logGroup, logEvent.logStream, logEvent.logEvents);
+    await processAll(ENDPOINT, TOKEN, logEvent.logGroup, logEvent.logStream, logEvent.logEvents);
     console.log(`Successfully processed ${logEvent.logEvents.length} log events.`);
     callback(null, `Successfully processed ${logEvent.logEvents.length} log events.`);
   } catch (e) {
@@ -44,6 +47,8 @@ export async function handler(
 }
 
 async function processAll(
+  endpoint: string,
+  token: string,
   logGroup: string,
   logStream: string,
   logEvents: ICloudWatchLogEvent[]
@@ -75,7 +80,7 @@ async function processAll(
         log.requestId = log.fields["requestId"];
         log.kind = log.fields["kind"] || log.kind;
         log.type = "JSON";
-        log.token = TOKEN;
+        log.token = token;
 
         // remove duplication for root itmes
         delete log.fields.stage;
@@ -96,7 +101,7 @@ async function processAll(
       throw err;
     }
   });
-  console.log(`Log Payload [ ${ENDPOINT} ]:`, logEntries.join(""));
-  const results = await axios.post(ENDPOINT, logEntries.join("\n"));
+  console.log(`Log Payload [ ${endpoint} ]:`, logEntries.join(""));
+  const results = await axios.post(endpoint, logEntries.join("\n"));
   console.log("SHIPPING RESULT", results);
 }

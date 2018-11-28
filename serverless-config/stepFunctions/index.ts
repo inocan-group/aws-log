@@ -25,19 +25,19 @@ const steps: IStepFunction = {
 
 
 const stateMachines: IDictionary<IStateMachine> = {
-  nameOfStateMachine: {
-    events: [
-      {
-        schedule: {
-          rate: "rate(240 minutes)",
-          enabled: true,
-          input: { foo: "bar" }
-        }
-      }
-    ],
-    name: "[nameOfStateMachine]-${self:custom.stage}-steps",
-    definition: steps
-  }
+  // nameOfStateMachine: {
+  //   events: [
+  //     {
+  //       schedule: {
+  //         rate: "rate(240 minutes)",
+  //         enabled: true,
+  //         input: { foo: "bar" }
+  //       }
+  //     }
+  //   ],
+  //   name: "[nameOfStateMachine]-${self:custom.stage}-steps",
+  //   definition: steps
+  // }
 };
 
-export default { stateMachines };
+export default {};

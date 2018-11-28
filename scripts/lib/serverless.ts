@@ -1,9 +1,10 @@
 // tslint:disable:no-implicit-dependencies
-import { IServerlessConfig, IDictionary } from "common-types";
+import { IServerlessConfig, IDictionary, IServerlessFunction, IStepFunction } from "common-types";
 import chalk from "chalk";
 import * as fs from "fs";
 import * as yaml from "js-yaml";
 import * as path from "path";
+import { SLS_CONFIG_DIRECTORY, STATIC_DEPENDENCIES_FILE } from "..";
 
 export interface IServerlessCliOptions {
   required?: boolean;
@@ -98,4 +99,27 @@ export async function serverless(
       chalk.grey(`- No ${name} found in ${CONFIG_DIR}/${where}/index.ts so ignoring`)
     );
   }
+}
+
+/** tests whether the running function is running withing Lambda */
+export function isLambda() {
+  return !!((process.env.LAMBDA_TASK_ROOT && process.env.AWS_EXECUTION_ENV) || false);
+}
+
+export async function getFunctions() {
+  return getSomething<IDictionary<IServerlessFunction>>("functions");
+}
+
+export async function getStepFunctions() {
+  return getSomething<IDictionary<IStepFunction>>("stepFunctions");
+}
+
+async function getSomething<T = any>(something: string) {
+  const file = fs.existsSync(`${SLS_CONFIG_DIRECTORY}/${something}.ts`)
+    ? `${SLS_CONFIG_DIRECTORY}/${something}.ts`
+    : `${SLS_CONFIG_DIRECTORY}/${something}/index.ts`;
+
+  const defExport = await import(file);
+
+  return defExport.default as T;
 }
