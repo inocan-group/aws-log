@@ -39,7 +39,7 @@ yarn add log-shipper
 Now that the dependendency is installed you can import it in your code like so:
 
 ```typescript
-import logger from log - shipper;
+import logger from "log-shipper";
 const { log, debug, info, warn, error } = logger();
 
 log("this is a log message", { foo: 1, bar: 2 });
@@ -172,7 +172,7 @@ requestId: string;
 We've already discussed the utility of passing the `event` and `context` attributes to the logger and in the handler function we have a simple way of achieving this as these two objects are immediately available:
 
 ```typescript
-export function handler(event, context) { 
+export function handler(event, context) {
    const { log, debug, info, warn, error } = logger().lambda(event, context);
    // ...
 }
@@ -208,19 +208,31 @@ The way the correlation ID is set is when "context" is provided -- typically via
 
 ### Passing the Correlation ID
 
-The standard way of calling a Lambda functon from within a Lambda is through the [invokeAsync](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Lambda.html#invokeAsync-property) method of the AWS Lambda interface:
+The standard way of calling a Lambda functon from within a Lambda is through the [invoke](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Lambda.html#invoke-property) method of the AWS Lambda interface:
 
 ```typescript
-import lambda from "";
-lambda.invokeAsync(params, fn(err, data) { ... });
+import { Lambda } from "aws-sdk";
+const lambda = new Lambda({ region: "us-east-1" });
+lambda.invoke(params, fn(err, data) { ... });
 ```
 
-As a convenience, this library provides `invoke` which is used in an almost identical way but also ensures that the correlation ID is passed as a header to the next function:
+As a convenience, this library provides `invoke` which is used in has the same signature but implements the function as an async function instead if the more traditional err/data callback structure.
 
 ```typescript
 import { invoke } from "log-shipper";
-await invoke(params);
+try {
+   await invoke(params);
+} catch(e) {
+  // your error handler here or if you like just ignore the try/catch
+  // and let the error cascade down to a more general error handler
+}
 ```
+
+> Note: the AWS API exposes both an `invoke` and `invokeAsync`  which is a little confusing sometimes because `invoke` can also be asynchronous! At this point no one should use the `invokeAsync` call as it is deprecated and therefore we ignore this signature. Also bear in mind that you SHOULD always be using the *asynchronous* call in microservices. See below for more on that.
+
+### Parameters Invocation
+
+This library is typed so you 
 
 ## License
 
