@@ -1,27 +1,12 @@
-# Log Shipper
+# AWS log
 
-The log shipper is intended for serverless functions to use as their exclusive way to
-write to STDOUT and STDERR. By using the `log.xxx()` methods you will ensure that all
-output is in JSON format and that requests are tagged with a `x-correlation-id`.
+The **aws-log** module is intended for serverless functions to use as their exclusive way to
+write to STDOUT and STDERR. By using using this library you will:
 
-The JSON format is important in any logging environment to provide a structured set of
-information. While we have developed this with the [ELK stack](https://elastic.co) in mind
-it should put data into a format that's useful for any reporting environment.
-
-So why STDOUT and STDERR? Well we use these standard pipes because AWS Lambda allows us to
-do this at "no cost" to execution of our serverless functions. It also means that this
-data is available in **Cloudwatch** logs and gives you the ability -- where it makes sense
--- to configure alerts there too.
-
-For a micro-service architecture, however, it is **often** the case that logging is best
-externalized to a separate environment. This module does not support that directly but it
-is a relatively simple process of creating a "shipper function" which will be called at
-each Lambda execution and be streamed the STDOUT/STDERR so you can forward that onto the
-appropriate logging service.
-
-Because as a company we use [Logzio](https://logzio.com) for our shipping we have created
-a shipper for this purpose. If you care to use that you can find it on **NPM** as
-`log-shipper-logzio`;
+- be assured that all data sent to your logging solution will be as structured JSON string
+- contextual information will be sent along with the details of that log message
+- automatic creation of a correlation-id for cross-function tracing
+- your "shipper" function will be able to filter log messages based on configured "severity"
 
 ## Installing
 
@@ -29,9 +14,9 @@ In your project root add the Log Shipper module:
 
 ```sh
 # npm
-npm install -s log-shipper
+npm install -s aws-log
 # yarn
-yarn add log-shipper
+yarn add aws-log
 ```
 
 ## Logging
@@ -39,7 +24,7 @@ yarn add log-shipper
 Now that the dependendency is installed you can import it in your code like so:
 
 ```typescript
-import logger from "log-shipper";
+import logger from "aws-log";
 const { log, debug, info, warn, error } = logger();
 
 log("this is a log message", { foo: 1, bar: 2 });
@@ -143,7 +128,7 @@ The main difference in these two situations is in the data passed in as the **ev
 
 The `context` object is largely the same between the two types of Lambda's mentioned above but in both cases provides some useful meta-data for logging. For those interested the full typeing is here: [IAWSLambaContext](https://github.com/lifegadget/common-types/blob/master/src/aws.ts#L133-L170).
 
-All this information, regardless of which type of function it is, becomes "background knowledge" as `log-shipper` will take care of all the contextual information for you if you use `.lambda(event, context)`, providing you with the following attributes on your context property:
+All this information, regardless of which type of function it is, becomes "background knowledge" as `aws-log` will take care of all the contextual information for you if you use `.lambda(event, context)`, providing you with the following attributes on your context property:
 
 ```typescript
 /** the REST command (e.g., GET, PUT, POST, DELETE) */
@@ -189,7 +174,7 @@ function doSomething() {
 
 ## More Context
 
-The original, and generic, `logger.context(obj)` method allowed us to add whatever name/value pairs we pleased but with `logger.lambda(event, context)` we rely on **log-shipper** to choose context for us. This is probably good enough for most situations but wherever you want to add more you can do so easily enough:
+The original, and generic, `logger.context(obj)` method allowed us to add whatever name/value pairs we pleased but with `logger.lambda(event, context)` we rely on **aws-log** to choose context for us. This is probably good enough for most situations but wherever you want to add more you can do so easily enough:
 
 ```typescript
 // in the handler function
@@ -206,7 +191,7 @@ The correlation ID -- which shows up as `@x-correlation-id` in the log entry -- 
 
 The way the correlation ID is set is when "context" is provided -- typically via the `lambda(event, context)` parameters -- it looks  for a property `x-correlation-id` in the "headers" property of the event. This means that if you are originating a request via API-Gateway, you _can_ pass in this value as part of the request. In fact, it is _often_ the case that graph of function executions does originate from API-Gateway but even in this situation we typically suggest the client does not send in a correlation ID unless there is a chain of logging that preceeded this call on the client side. In most cases, the absence of a correlation ID results in one being created automatically. Once it is created though it must be _forwarded_ to all other executions downstream. This is achieved via a helper method provided by this library called `invoke`.
 
-### Passing the Correlation ID
+### Passing the Correlation ID with `invoke`
 
 The standard way of calling a Lambda functon from within a Lambda is through the [invoke](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Lambda.html#invoke-property) method of the AWS Lambda interface:
 
@@ -216,23 +201,59 @@ const lambda = new Lambda({ region: "us-east-1" });
 lambda.invoke(params, fn(err, data) { ... });
 ```
 
-As a convenience, this library provides `invoke` which is used in has the same signature but implements the function as an async function instead if the more traditional err/data callback structure.
+As a convenience, this library provides `invoke` which provides the same functionality but with a simplified calling structure:
 
 ```typescript
-import { invoke } from "log-shipper";
+import { invoke } from "aws-log";
 try {
-   await invoke(params);
+   await invoke(fnArn, request, options);
 } catch(e) {
   // your error handler here or if you like just ignore the try/catch
   // and let the error cascade down to a more general error handler
 }
 ```
 
-> Note: the AWS API exposes both an `invoke` and `invokeAsync`  which is a little confusing sometimes because `invoke` can also be asynchronous! At this point no one should use the `invokeAsync` call as it is deprecated and therefore we ignore this signature. Also bear in mind that you SHOULD always be using the *asynchronous* call in microservices. See below for more on that.
+> Note: the AWS API exposes both an `invoke` and `invokeAsync`  which is a little confusing sometimes because `invoke` can also be asynchronous! At this point no one should use the `invokeAsync` call as it is deprecated and therefore we ignore exposing this in our API.
 
-### Parameters Invocation
+### The Request API for `invoke`
 
-This library is typed so you 
+The request API only requires two parameters:
+
+- the [ARN](https://docs.aws.amazon.com/AmazonS3/latest/dev/s3-arn-format.html) representing the function you are calling
+- the parameters you want to send in (as an object)
+
+See below for an example:
+
+```typescript
+await invoke(
+  "arn:aws:lambda:us-east-1:837955399040:function:myapp-prod-myfunction",
+  { foo: 1, bar: 2 }
+);
+```
+
+Now that's sort of compact but you can make it **much** more compact if you follow a few conventions:
+
+- First, you don't actually need the `arn:aws:lambda` at all, it will be assumed if you don't start with "arn".
+- Second, if you set the `AWS_REGION` environment variable for your function then you can leave off that component.
+- Third, if you provide `AWS_ACCOUNT` as a variable then you no longer need to state that in the string.
+- Finally, if you provide `AWS_STAGE` then you can leave off the **prod** | **dev** | **_etc._** portion.
+
+That means if you do all of the above you only need the following:
+
+```typescript
+await invoke("myfunction", { foo: 1, bar: 2 });
+```
+
+This also has the added benefit of dynamically adjusting to the stage you are in (which you'll almost always want).
+
+The last parameter in the signature is `options` (which is typed for those of you with intellisense) but basically this gives you an option to:
+
+- turn on the "dryrun" feature AWS exposes
+- specify a specific version of the function (rather than the default)
+
+## Shipping
+
+In Lambda you can specify a particular Lambda function to be executed with your serverless functions to accept your STDOUT and STDERR streams. If you have an external logging solution then you should attach a "shipping" function to ship these entries to that external solution. Here at Inocan Group we use [Logzio](https://logzio.com) and if you do as well you should feel free to use ours: [`logzio-shipper`](https://github.com/inocan-group/logzio-shipper).
 
 ## License
 

@@ -1,13 +1,15 @@
 {
   "name": "log-shipper",
   "version": "0.1.0",
-  "description": "log-shipper",
+  "description": "A logging framework for AWS",
   "license": "MIT",
-  "repository": "https://your-server.com/inocan_move/log-shipper",
+  "repository": "https://github.com/inocan-group/aws-log",
   "author": "Ken Snyder <ken@ken.net>",
   "keywords": [
     "serverless",
-    "typescript"
+    "typescript",
+    "aws",
+    "logging"
   ],
   "files": [
     "lib"
