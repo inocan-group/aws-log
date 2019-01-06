@@ -1,6 +1,6 @@
-# AWS log
+# AWS Log
 
-The **aws-log** module is intended for serverless functions to use as their exclusive way to
+The **aws-log** module is intended for AWS serverless functions to use as their exclusive way to
 write to STDOUT and STDERR. By using using this library you will:
 
 - be assured that all data sent to your logging solution will be as structured JSON string
@@ -135,9 +135,9 @@ All this information, regardless of which type of function it is, becomes "backg
 httpMethod: string;
 /** the path to the endpoint called */
 path: string;
-/** parameters passed to function as a query parameter; aka, the name-value pairs after the "&" character */
+/** query parameters; aka, the name-value pairs after the "&" character */
 queryStringParameters: string;
-/** parameters passed in via the path itself
+/** parameters passed in via the path itself */
 pathParameters: string;
 /** the callers user agent string */
 userAgent: string;
