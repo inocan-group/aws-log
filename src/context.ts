@@ -1,21 +1,5 @@
 import { IDictionary } from "common-types";
-export interface ILogContext extends IDictionary {
-  /** a unique ID for a graph/fan of related function executions */
-  "x-correlation-id"?: string;
-  module?: string;
-  kind?: string;
-  /**
-   * a way to name a series of repeated steps/functions, etc.
-   */
-  workflow?: string;
 
-  awsRegion: string;
-  functionName: string;
-  functionVersion: string;
-  functionMemorySize: string;
-  stage: string;
-  userAgent?: string;
-}
 
 export interface ILogBaseContext {
   awsRegion: string;

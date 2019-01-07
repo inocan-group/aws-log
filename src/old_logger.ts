@@ -2,24 +2,8 @@ import * as context from "./context";
 import { IDictionary, ILambdaSuccessCallback } from "common-types";
 import * as stack from "stack-trace";
 
-const LogLevels: IDictionary<number> = {
-  DEBUG: 0,
-  INFO: 1,
-  WARN: 2,
-  ERROR: 3
-};
-
-// default to debug if not specified
-function logLevelName() {
-  return process.env.log_level || "DEBUG";
-}
-
-function isEnabled(level: number) {
-  return level >= LogLevels[logLevelName()];
-}
-
 function log(
-  levelName: keyof typeof LogLevels,
+  levelName: keyof typeof LogLevel,
   message: string,
   /** contextual parameters for the logging, if this is an error or warning you can just include the error here */
   params?: IDictionary,

@@ -34,21 +34,23 @@ In this simple example this will produce the following output to STDOUT:
 
 ```json
 {
+  "@x-correlation-id": "1234-xyzd-abcd",
+  "@severity": 1,
   "message": "this is a log message",
   "foo": 1,
   "bar": 2,
-  "@x-correlation-id": "1234-xyzd-abcd",
-  "@severity": 1
 }
 ```
 
-Things to know about using the `log`, `info`, `debug`, `warn` or `error` functions; all of
-which hang off the return from the `logger()` function you see in the example above:
+Things to note about usage:
 
+- You must call the `logger()` function to get the primary logging functions which are: `log`, `info`, `debug`, `warn` and `error`.
+  > **Note:** `log` is just an _alias_ for the `info`; we find `log` to be a little
+  > easier to use but traditional logging systems use `info` more consistenly.
 - we ALWAYS get a JSON object as a return (good for logging frameworks)
 - The first calling parameter is mapped to the `message` parameter in the output
 - The second calling parameter is _optional_ but allows you to add other structured
-  attributes which help to define the log message
+- attributes which help to define the log message
 - Every message will have a `@severity` attached to it. This is one-to-one mapped to which
   log function you choose:
 
@@ -61,12 +63,9 @@ which hang off the return from the `logger()` function you see in the example ab
   };
   ```
 
-  - Every message will have a `@x-correlation-id` attached to it ... more on that later
+- Every message will have a `@x-correlation-id` attached to it ... more on that later
 
-  &nbsp;
-
-  > Note: **log** is just an _alias_ for the **info** level; we find "log" to be a little
-  > easier to use but traditional logging systems use "info" more consistenly.
+  > **Note:** while there is no "timestamp" attribute appended we leave that off because AWS includes the timestamp by default on each log entry. Please do ensure your _shipper_ function picks up the timestamp and adds it into the JSON payload.
 
 ## Persistent Context
 
@@ -84,11 +83,12 @@ In this example the output would be:
 
 ```json
 {
+  "@x-correlation-id": "1234-xyzd-abcd",
+  "@severity": 1,
+  "@timestamp": 2234234,
   "message": "this is a log message",
   "foo": 1,
   "bar": 2,
-  "@x-correlation-id": "1234-xyzd-abcd",
-  "@severity": 1,
   "context": {
     "foo": "bar"
   }
@@ -150,6 +150,8 @@ functionVersion: string;
 logStreamName: string;
 /** the AWS requestId which is unique for this function call */
 requestId: string;
+/** the version from package.json file (for serverless function, not other libs) */
+packageVersion: string;
 ```
 
 ## Files External to Handler
@@ -178,9 +180,9 @@ The original, and generic, `logger.context(obj)` method allowed us to add whatev
 
 ```typescript
 // in the handler function
-const { log, debug, info, warn, error } = logger().lambda(event, context, moreContext);
+const { log } = logger().lambda(event, context, moreContext);
 // somewhere else
-const { log, debug, info, warn, error } = logger().reloadContext(moreContext);
+const { log } = logger().reloadContext(moreContext);
 ```
 
 > **NOTE:** that while both signatures are valid, the first one is STRONGLY recommended because "context" is meant to be information which is valid for the full execution of the function. Typically we'd expect this to be established as the first line of the handler function not later in the execution.
