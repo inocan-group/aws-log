@@ -1,7 +1,7 @@
 // tslint:disable:no-implicit-dependencies
 import * as chai from "chai";
 import * as helpers from "./testing/helpers";
-import { getLoggerConfig, logger, LogLevel } from "../src/logger";
+import { getLoggerConfig, logger, LogLevel, setSeverity } from "../src/logger";
 import { IDictionary, IAWSLambaContext } from "common-types";
 
 const expect = chai.expect;
@@ -38,6 +38,9 @@ describe("Logger Basics", () => {
     const config = getLoggerConfig();
     expect(config.correlationId).is.not.equal(undefined);
     expect(config.severity).is.equal(LogLevel.info);
+    expect(config.context).is.an("object");
+    expect(Object.keys(config.context)).has.lengthOf(1);
+    expect(config.context.logger).to.equal("aws-log");
   });
   it("Initialization with context() works as expected", () => {
     const api = logger().context({ foo: 1, bar: 2 });
@@ -45,12 +48,12 @@ describe("Logger Basics", () => {
     missingContextApi(api);
     const config = getLoggerConfig();
     expect(config.correlationId).is.not.equal(undefined);
-    console.log(process.env.LOG_LEVEL);
 
     expect(config.severity).is.equal(LogLevel.info);
     expect(config.context).to.be.an('object');
     expect(config.context.foo).to.equal(1);
     expect(config.context.bar).to.equal(2);
+    expect(config.context.logger).to.equal("aws-log");
   });
 
   it("Severity responds to LOG_LEVEL environment variable", () => {
@@ -87,7 +90,8 @@ describe("Logger Basics", () => {
   });
 
   it('conflict with "context" property resolved', () => {
-    const api = logger().lambda({...lambdaEvent, ...{context: "conflict"}}, lambdaContext, { foo: 1, bar: 2, context: "not-conflict" });
+    process.env.LOG_LEVEL=String(LogLevel.info);
+    const api = logger().lambda(lambdaEvent, lambdaContext, { foo: 1, bar: 2, context: "not-conflict" });
     process.env.LOG_TESTING="true";
     const response = api.log("this is a test", {
       foo: 1,
@@ -98,7 +102,33 @@ describe("Logger Basics", () => {
 
     expect(response._context).to.equal("conflict");
     expect(response.context).to.be.an("object");
+    expect(response.context.context).to.equal("not-conflict");
   });
+
+  it('nothing logged when logging level is too low', () => {
+    process.env.LOG_TESTING="true";
+    process.env.LOG_LEVEL=String(LogLevel.info);
+    let { debug, info, warn, error } = logger();
+    expect(debug("testing")).to.equal(undefined);
+    expect(info("testing")).to.not.equal(undefined).and.to.be.a("string");
+    expect(warn("testing")).to.not.equal(undefined).and.to.be.a("string");
+
+    setSeverity(LogLevel.warn);
+    expect(debug("testing")).to.equal(undefined);
+    expect(info("testing")).to.equal(undefined);;
+    expect(warn("testing")).to.not.equal(undefined).and.to.be.a("string");
+
+    process.env.LOG_TESTING="";
+  });
+
+  it('before reloadContext() context is empty', () => {
+    logger();
+    const config = getLoggerConfig();
+    console.log(config);
+
+  });
+
+
 
 });
 

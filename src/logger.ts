@@ -4,9 +4,23 @@ import {
   IAWSLambaContext
 } from "common-types";
 import * as stack from "stack-trace";
-import { IAwsLogContext, IAwsLog, LooseContext } from "./types";
+import { IAwsLogContext, IAwsLog } from "./types";
 
-let severity: number = 1;
+const LogLevelLookup: IDictionary<number> = {
+  DEBUG: 0,
+  INFO: 1,
+  WARN: 2,
+  ERROR: 3
+};
+
+export enum LogLevel {
+  debug,
+  info,
+  warn,
+  error
+}
+
+let severity: LogLevel = LogLevel.info;
 let correlationId: string = "";
 
 let rootProperties = () => ({
@@ -14,7 +28,7 @@ let rootProperties = () => ({
   "@severity": severity
 });
 
-let context: LooseContext = {};
+let context: IAwsLogContext = { logger: "aws-log" };
 
 function createCorrelationId(): string {
   return (
@@ -65,22 +79,8 @@ const contextApi = {
 export function logger() {
   severity = getSeverity();
   correlationId = createCorrelationId();
-  context = { logger: "aws-shipper" };
+  context = { logger: "aws-log" };
   return { ...loggingApi, ...contextApi };
-}
-
-const LogLevelLookup: IDictionary<number> = {
-  DEBUG: 0,
-  INFO: 1,
-  WARN: 2,
-  ERROR: 3
-};
-
-export enum LogLevel {
-  debug,
-  info,
-  warn,
-  error
 }
 
 function stdout(msg: string | IDictionary) {
@@ -106,19 +106,28 @@ function avoidContextCollision(options: IDictionary) {
 
 function debug(message: string, params: IDictionary = {}) {
   if (severity === LogLevel.debug) {
-    return stdout({ ...{ message, context }, ...avoidContextCollision(params) });
+    return stdout({
+      ...{ message, context },
+      ...avoidContextCollision(params)
+    });
   }
 }
 
 function info(message: string, params: IDictionary = {}) {
   if (severity <= LogLevel.info) {
-    return stdout({ ...{ message, context }, ...avoidContextCollision(params) });
+    return stdout({
+      ...{ message, context },
+      ...avoidContextCollision(params)
+    });
   }
 }
 
 function warn(message: string, params: IDictionary = {}) {
   if (severity <= LogLevel.warn) {
-    return stdout({ ...{ message, context }, ...avoidContextCollision(params) });
+    return stdout({
+      ...{ message, context },
+      ...avoidContextCollision(params)
+    });
   }
 }
 
@@ -130,16 +139,22 @@ function error(
   // errors are logged at all log levels
 }
 
-export type ILambdaEvent<T = IDictionary> = IAWSLambdaProxyIntegrationRequest | T;
+export type ILambdaEvent<T = IDictionary> =
+  | IAWSLambdaProxyIntegrationRequest
+  | T;
 
-function lambda(event: ILambdaEvent, ctx: IAWSLambaContext, options: IDictionary = {}) {
+function lambda(
+  event: ILambdaEvent,
+  ctx: IAWSLambaContext,
+  options: IDictionary = {}
+) {
   correlationId = findCorrelationId(event, ctx) || createCorrelationId();
   const severity = getSeverity();
 
   context = {
     ...options,
     ...ctx,
-    ...{ logger: "aws-shipper" }
+    ...{ logger: "aws-log" }
   };
 
   return loggingApi;
@@ -148,10 +163,14 @@ function lambda(event: ILambdaEvent, ctx: IAWSLambaContext, options: IDictionary
 function setContext(ctx: IDictionary) {
   context = {
     ...ctx,
-    ...{ logger: "aws-shipper" }
+    ...{ logger: "aws-log" }
   };
 
   return loggingApi;
+}
+
+export function setSeverity(s: LogLevel) {
+  severity = s;
 }
 
 export function getLoggerConfig() {

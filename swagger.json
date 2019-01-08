@@ -1,0 +1,14 @@
+{
+  "openapi": "3.0.0",
+  "x-api-id": "log-shipper",
+  "info": {
+    "version": "0.1.0",
+    "title": "log-shipper"
+  },
+  "servers": [
+    {
+      "url": "http://base.url"
+    }
+  ],
+  "paths": {}
+}
