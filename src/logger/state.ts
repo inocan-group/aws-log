@@ -16,7 +16,7 @@ const defaultState: IAwsLogState = {
 };
 
 let archivedState: IAwsLogState;
-let activeState: IAwsLogState = defaultState;
+let activeState: IAwsLogState = { ...defaultState };
 
 let severity: LogLevel = LogLevel.info;
 let correlationId: string = "";
@@ -61,7 +61,7 @@ export function getRootProperties() {
 
 export function clearState() {
   archiveState(activeState);
-  activeState = defaultState;
+  activeState = { ...defaultState };
 }
 
 export function restoreState() {

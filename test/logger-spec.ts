@@ -4,6 +4,7 @@ import * as helpers from "./testing/helpers";
 import { getLoggerConfig, logger, setSeverity, getState } from "../src/logger";
 import { LogLevel, IAwsLog } from "../src/types";
 import { IDictionary, IAWSLambaContext } from "common-types";
+import { getContext } from "../src/logger/state";
 
 const expect = chai.expect;
 process.env.LOG_LEVEL = "";
@@ -52,7 +53,6 @@ describe("Logger Basics", () => {
     missingContextApi(api);
 
     const config = getState();
-    console.log(config);
 
     expect(config.correlationId).is.not.equal(undefined);
     expect(config.severity).is.equal(LogLevel.info);
@@ -77,7 +77,6 @@ describe("Logger Basics", () => {
     testLoggingApi(api);
     missingContextApi(api);
     const config = getState();
-    console.log(config);
 
     expect(config.context).to.be.an("object");
     expect(config.context.functionName).to.equal(lambdaContext.functionName);
@@ -148,11 +147,23 @@ describe("Logger Basics", () => {
     process.env.LOG_TESTING = "";
   });
 
-  it("before reloadContext() context is empty", () => {
-    logger();
-    const config = getLoggerConfig();
-    console.log(config);
-    //TODO: finish testing after implementation
+  it("before reloadContext() context is empty minus env-based context", () => {
+    process.env.LOG_LEVEL = String(LogLevel.info);
+    logger().lambda(lambdaEvent, lambdaContext); // set context
+    logger(); // re-enter but with no context
+    const context = getContext();
+    expect(context.functionName).to.equal(undefined);
+    expect(context.functionVersion).to.equal(undefined);
+  });
+
+  it("after reloadContext() context is returned", () => {
+    process.env.LOG_LEVEL = String(LogLevel.info);
+    logger().lambda(lambdaEvent, lambdaContext); // set context
+    logger().reloadContext();
+    const context = getContext();
+
+    expect(context.functionName).to.equal(lambdaContext.functionName);
+    expect(context.functionVersion).to.equal(lambdaContext.functionVersion);
   });
 });
 

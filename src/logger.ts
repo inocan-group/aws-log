@@ -10,7 +10,9 @@ import {
   getState,
   initSeverity,
   setCorrelationId,
-  getCorrelationId
+  getCorrelationId,
+  clearState,
+  restoreState
 } from "./logger/state";
 export { setSeverity, setContext, getState } from "./logger/state";
 
@@ -46,10 +48,12 @@ function findCorrelationId(
 
 const contextApi = {
   context: setContext,
-  lambda
+  lambda,
+  reloadContext: restoreState
 };
 
 export function logger() {
+  clearState();
   initSeverity();
   setCorrelationId(createCorrelationId());
 
