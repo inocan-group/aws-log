@@ -1,6 +1,6 @@
 import { IDictionary } from "common-types";
 import { IParsedArn } from "./parseArn";
-import { getCorrelationId } from "../logger/state";
+import { getCorrelationId, getContext } from "../logger/state";
 import { Lambda } from "aws-sdk";
 
 /**
@@ -19,11 +19,17 @@ export function buildRequest(arn: IParsedArn, request: IDictionary, ) {
   let Payload: string;
   if (request.headers) {
     request.headers["x-correlation-id"] = getCorrelationId();
+    request.headers["x-calling-function"] = getContext().functionName;
+    request.headers["x-calling-request-id"] = getContext().requestId;
     Payload = JSON.stringify(request);
   } else {
     Payload = JSON.stringify({
       ...request,
-      ...{headers: {"x-correlation-id": getCorrelationId()}}
+      ...{headers: {
+        "x-correlation-id": getCorrelationId(),
+        "x-calling-function": getContext().functionName,
+        "x-calling-request-id": getContext().requestId
+      }}
     });
   }
 
