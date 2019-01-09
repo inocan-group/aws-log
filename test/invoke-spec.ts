@@ -4,6 +4,7 @@ import {parseArn} from "../src/invoke/parseArn";
 import { invoke } from "../src/invoke";
 import { ensureFunctionName } from "../src/invoke/ensureFunctionName"
 import { buildRequest } from "../src/invoke/buildRequest";
+import { logger } from "../src/logger";
 
 const expect = chai.expect;
 
@@ -116,21 +117,24 @@ describe("invoke :: ARN Parsing →", () => {
 
 describe("invoke :: buildRequest() →", () => {
 
-  it('request is correct structure with basic params sent in', async () => {
+  it.only('request is correct structure with basic params sent in', async () => {
     process.env.AWS_STAGE = "prod";
     process.env.AWS_ACCOUNT = "9378553667040";
     process.env.AWS_REGION = "us-east-1";
     process.env.APP_NAME = "test-services";
+    const temp = logger();
 
     const response = buildRequest(parseArn("myFunc"), { foo: 1, bar: 2 });
     expect(response.Payload).to.be.a("string");
     const payload = JSON.parse(response.Payload as string);
     expect(payload.headers).to.be.an("object").and.haveOwnProperty("x-correlation-id");
+    expect(payload.headers["x-calling-function"])
 
     expect(response.FunctionName).to.equal(`arn:aws:lambda:us-east-1:9378553667040:function:test-services-myFunc`);
 
     expect(response.LogType).to.equal("None");
     expect(response.InvocationType).to.equal("Event");
+
   });
 
 })
