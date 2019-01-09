@@ -65,7 +65,7 @@ export function warn(message: string, params: IDictionary = {}) {
   }
 }
 
-function error(
+export function error(
   msgOrError: string | IDictionary,
   paramsOrErr?: IDictionary,
   err?: IDictionary
@@ -73,13 +73,3 @@ function error(
   const context = getContext();
   // errors are logged at all log levels
 }
-
-
-
-export const loggingApi = {
-  log: info,
-  debug,
-  info,
-  warn,
-  error
-};

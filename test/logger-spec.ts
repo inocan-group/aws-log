@@ -1,7 +1,8 @@
 // tslint:disable:no-implicit-dependencies
 import * as chai from "chai";
 import * as helpers from "./testing/helpers";
-import { getLoggerConfig, logger, setSeverity, getState } from "../src/logger";
+import { logger } from "../src/logger";
+import { getState, setSeverity } from "../src/logger/state";
 import { LogLevel, IAwsLog } from "../src/types";
 import { IDictionary, IAWSLambaContext } from "common-types";
 import { getContext } from "../src/logger/state";
@@ -38,7 +39,7 @@ describe("Logger Basics", () => {
   });
   it("Initialization without context() works as expected", () => {
     const api = logger();
-    const config = getLoggerConfig();
+    const config = getState();
     expect(config.correlationId).is.not.equal(undefined);
     expect(config.severity).is.equal(LogLevel.info);
     expect(config.context).is.an("object");
@@ -65,7 +66,7 @@ describe("Logger Basics", () => {
   it("Severity responds to LOG_LEVEL environment variable", () => {
     process.env.LOG_LEVEL = String(LogLevel.warn);
     const api = logger();
-    const config = getLoggerConfig();
+    const config = getState();
     expect(config.correlationId).is.not.equal(undefined);
     expect(config.severity).is.equal(LogLevel.warn);
 

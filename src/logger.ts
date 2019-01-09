@@ -1,19 +1,15 @@
-import {
-  IDictionary,
-  IAWSLambdaProxyIntegrationRequest,
-  IAWSLambaContext
-} from "common-types";
-import { loggingApi } from "./logger/logging-api";
+import { IDictionary } from "common-types";
+import { info, debug, warn, error } from "./logger/logging-api";
+import { lambda } from "./logger/lambda";
 import {
   setContext,
-  setSeverity,
   getState,
   initSeverity,
   setCorrelationId,
-  getCorrelationId,
   clearState,
   restoreState
 } from "./logger/state";
+import { createCorrelationId } from "./logger/correlationId";
 export { setSeverity, setContext, getState } from "./logger/state";
 
 export const logLevelLookup: IDictionary<number> = {
@@ -23,30 +19,15 @@ export const logLevelLookup: IDictionary<number> = {
   ERROR: 3
 };
 
-function createCorrelationId(): string {
-  return (
-    "c-" +
-    Math.random()
-      .toString(36)
-      .substr(2, 16)
-  );
-}
+export const loggingApi = {
+  log: info,
+  debug,
+  info,
+  warn,
+  error
+};
 
-/**
- * Looks in various places to find an existing correlationId
- */
-function findCorrelationId(
-  event: ILambdaEvent,
-  context: IAWSLambaContext
-): string | false {
-  return event.headers && event.headers["@x-correlation-id"]
-    ? event.headers["@x-correlation-id"]
-    : event.headers && event.headers["x-correlation-id"]
-    ? event.headers && event.headers["x-correlation-id"]
-    : false;
-}
-
-const contextApi = {
+export const contextApi = {
   context: setContext,
   lambda,
   reloadContext: restoreState
@@ -58,28 +39,4 @@ export function logger() {
   setCorrelationId(createCorrelationId());
 
   return { ...loggingApi, ...contextApi };
-}
-
-export type ILambdaEvent<T = IDictionary> =
-  | IAWSLambdaProxyIntegrationRequest
-  | T;
-
-function lambda(
-  event: ILambdaEvent,
-  ctx: IAWSLambaContext,
-  options: IDictionary = {}
-) {
-  setCorrelationId(findCorrelationId(event, ctx) || createCorrelationId());
-
-  setContext({
-    ...options,
-    ...ctx,
-    ...{ logger: "aws-log" }
-  });
-
-  return loggingApi;
-}
-
-export function getLoggerConfig() {
-  return getState();
 }

@@ -1,7 +1,6 @@
 import { LogLevel, IAwsLog, IAwsLogContext } from "../types";
 import { IDictionary } from "common-types";
-import { logLevelLookup } from "../logger";
-import { loggingApi } from "./logging-api";
+import { logLevelLookup, loggingApi } from "../logger";
 
 export interface IAwsLogState {
   correlationId: string;
@@ -41,10 +40,15 @@ export function getState() {
 
 export function getContext() {
   const envContext = {
-    awsRegion: process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "unknown",
-    stage: process.env.ENVIRONMENT || process.env.STAGE || process.env.AWS_STAGE || "unknown"
-  }
-  return {...activeState.context, ...envContext};
+    awsRegion:
+      process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "unknown",
+    stage:
+      process.env.ENVIRONMENT ||
+      process.env.STAGE ||
+      process.env.AWS_STAGE ||
+      "unknown"
+  };
+  return { ...activeState.context, ...envContext };
 }
 
 export function getCorrelationId() {
@@ -66,6 +70,8 @@ export function clearState() {
 
 export function restoreState() {
   activeState = archivedState || defaultState;
+
+  return loggingApi;
 }
 
 export function initSeverity() {
