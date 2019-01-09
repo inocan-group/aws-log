@@ -3,7 +3,6 @@ import { info, debug, warn, error } from "./logger/logging-api";
 import { lambda } from "./logger/lambda";
 import {
   setContext as context,
-  getState,
   initSeverity,
   setCorrelationId,
   clearState,
@@ -20,10 +19,15 @@ export const logLevelLookup: IDictionary<number> = {
 };
 
 export const loggingApi = {
+  /** an alias for the "info" level of logging */
   log: info,
+  /** the most verbose level of logging, usually reserved for debugging purposes only */
   debug,
+  /** informational messages about the state of the application/function/etc */
   info,
+  /** messages which represent a concern or possible concern */
   warn,
+  /** reserved for when a known error is encountered; beyond basic messaging the stack trace will passed along to stdout */
   error
 };
 
@@ -32,6 +36,7 @@ export const contextApi = {
   context,
   /** set the context for logging with the Lambda event and context */
   lambda,
+  /** allow for reloading context to last known point */
   reloadContext
 };
 

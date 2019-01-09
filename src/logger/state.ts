@@ -17,9 +17,6 @@ const defaultState: IAwsLogState = {
 let archivedState: IAwsLogState;
 let activeState: IAwsLogState = { ...defaultState };
 
-let severity: LogLevel = LogLevel.info;
-let correlationId: string = "";
-
 let rootProperties = () => ({
   "@x-correlation-id": activeState.correlationId,
   "@severity": activeState.severity

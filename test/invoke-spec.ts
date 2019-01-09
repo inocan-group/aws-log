@@ -117,7 +117,7 @@ describe("invoke :: ARN Parsing →", () => {
 
 describe("invoke :: buildRequest() →", () => {
 
-  it.only('request is correct structure with basic params sent in', async () => {
+  it('request is correct structure with basic params sent in', async () => {
     process.env.AWS_STAGE = "prod";
     process.env.AWS_ACCOUNT = "9378553667040";
     process.env.AWS_REGION = "us-east-1";
