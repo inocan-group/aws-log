@@ -4,7 +4,11 @@
     "files.exclude": {
         "**/.git": true,
         "**/.DS_Store": true,
-        "test/**/*.js": {"when": "$(basename).ts"},
-        "lib/*": true
+        "test/**/*.js": {"when": "$(basename).ts"}
+    },
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/bower_components": true,
+      "lib/*": true
     }
 }
