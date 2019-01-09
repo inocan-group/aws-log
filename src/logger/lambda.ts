@@ -1,7 +1,7 @@
 import { IDictionary, IAWSLambdaProxyIntegrationRequest, IAWSLambaContext } from "common-types";
 import { setCorrelationId, setContext } from "./state";
 import { findCorrelationId, createCorrelationId } from "./correlationId";
-import { loggingApi } from ".";
+import { loggingApi } from "./logging-api";
 
 export type ILambdaEvent<T = IDictionary> =
   | IAWSLambdaProxyIntegrationRequest

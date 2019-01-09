@@ -2,6 +2,19 @@ import { IDictionary } from "common-types";
 import { getSeverity, getContext, getRootProperties } from "./state";
 import { LogLevel, IAwsLog } from "../types";
 
+export const loggingApi = {
+  /** an alias for the "info" level of logging */
+  log: info,
+  /** the most verbose level of logging, usually reserved for debugging purposes only */
+  debug,
+  /** informational messages about the state of the application/function/etc */
+  info,
+  /** messages which represent a concern or possible concern */
+  warn,
+  /** reserved for when a known error is encountered; beyond basic messaging the stack trace will passed along to stdout */
+  error
+};
+
 /**
  * If the context object passed in contains a "context" property
  * move it out of the way so it doesn't collide with

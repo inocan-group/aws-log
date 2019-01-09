@@ -1,12 +1,23 @@
-import { LogLevel, IAwsLog, IAwsLogContext } from "../types";
+import { LogLevel, IAwsLogContext } from "../types";
 import { IDictionary } from "common-types";
-import { logLevelLookup, loggingApi } from "../logger";
+import { logLevelLookup } from "../logger";
+import { loggingApi } from "./logging-api";
+import { lambda } from "./lambda";
 
 export interface IAwsLogState {
   correlationId: string;
   severity: LogLevel;
   context: IAwsLogContext;
 }
+
+export const contextApi = {
+  /** set the context for logging with any hash object */
+  context: setContext,
+  /** set the context for logging with the Lambda event and context */
+  lambda,
+  /** allow for reloading context to last known point */
+  reloadContext: restoreState
+};
 
 const defaultState: IAwsLogState = {
   context: { logger: "aws-log" },
