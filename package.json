@@ -1,7 +1,7 @@
 {
   "name": "log-shipper",
-  "version": "0.1.0",
-  "description": "A logging framework for AWS",
+  "version": "0.1.3",
+  "description": "A logging framework for AWS Lambda",
   "license": "MIT",
   "repository": "https://github.com/inocan-group/aws-log",
   "author": "Ken Snyder <ken@ken.net>",
@@ -9,6 +9,7 @@
     "serverless",
     "typescript",
     "aws",
+    "lambda",
     "logging"
   ],
   "files": [
