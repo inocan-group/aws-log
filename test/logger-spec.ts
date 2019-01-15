@@ -164,6 +164,16 @@ describe("Logger Basics", () => {
     expect(context.functionName).to.equal(lambdaContext.functionName);
     expect(context.functionVersion).to.equal(lambdaContext.functionVersion);
   });
+
+  it("Adding localContext later is additive and shows in logging", () => {
+    process.env.LOG_LEVEL = String(LogLevel.info);
+    process.env.LOG_TESTING = "true";
+    const log = logger().lambda(lambdaEvent, lambdaContext, { baz: "test" }); // set context
+    log.addToLocalContext({ foo: "bar" });
+    const response = log.info("test message", { p1: 1, p2: 2 });
+    expect(response.foo).to.equal("bar");
+    expect(response.baz).to.equal("test");
+  });
 });
 
 function testLoggingApi(api: any) {

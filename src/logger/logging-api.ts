@@ -18,7 +18,11 @@ export const loggingApi = {
   /** messages which represent a concern or possible concern */
   warn,
   /** reserved for when a known error is encountered; beyond basic messaging the stack trace will passed along to stdout */
-  error
+  error,
+  /**
+   * Allows the local context to be appended to
+   */
+  addToLocalContext
 };
 
 /**
@@ -106,9 +110,6 @@ export function error(
   }
 }
 
-/**
- * Allows the local context to be appended to
- */
 export function addToLocalContext(ctx: IDictionary) {
   addLocalContext(ctx);
 }

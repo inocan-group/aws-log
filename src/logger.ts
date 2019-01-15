@@ -1,6 +1,5 @@
 import { IDictionary } from "common-types";
-import { info, debug, warn, error, loggingApi } from "./logger/logging-api";
-import { lambda } from "./logger/lambda";
+import { loggingApi } from "./logger/logging-api";
 import {
   initSeverity,
   setCorrelationId,
