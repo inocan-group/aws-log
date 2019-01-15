@@ -3,7 +3,8 @@ import {
   getSeverity,
   getContext,
   getRootProperties,
-  getLocalContext
+  getLocalContext,
+  addToLocalContext as addLocalContext
 } from "./state";
 import { LogLevel, IAwsLog, IAwsLogWithoutContext } from "../types";
 
@@ -103,6 +104,11 @@ export function error(
       ...(err as Error)
     });
   }
+}
 
-  // errors are logged at all log levels
+/**
+ * Allows the local context to be appended to
+ */
+export function addToLocalContext(ctx: IDictionary) {
+  addLocalContext(ctx);
 }
