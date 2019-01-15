@@ -14,8 +14,10 @@ import { Lambda } from "aws-sdk";
  * @param arn the ARN identification of the resource being called in
  *    the structured components that parseArn() provides
  */
-export function buildRequest(arn: IParsedArn, request: IDictionary, ) {
-  const FunctionName = `arn:aws:lambda:${arn.region}:${arn.account}:function:${arn.appName}-${arn.fn}`;
+export function buildInvocationRequest(arn: IParsedArn, request: IDictionary) {
+  const FunctionName = `arn:aws:lambda:${arn.region}:${arn.account}:function:${
+    arn.appName
+  }-${arn.fn}`;
   let Payload: string;
   if (request.headers) {
     request.headers["x-correlation-id"] = getCorrelationId();
@@ -25,11 +27,13 @@ export function buildRequest(arn: IParsedArn, request: IDictionary, ) {
   } else {
     Payload = JSON.stringify({
       ...request,
-      ...{headers: {
-        "x-correlation-id": getCorrelationId(),
-        "x-calling-function": getContext().functionName,
-        "x-calling-request-id": getContext().requestId
-      }}
+      ...{
+        headers: {
+          "x-correlation-id": getCorrelationId(),
+          "x-calling-function": getContext().functionName,
+          "x-calling-request-id": getContext().requestId
+        }
+      }
     });
   }
 
@@ -38,5 +42,5 @@ export function buildRequest(arn: IParsedArn, request: IDictionary, ) {
     Payload,
     LogType: "None",
     InvocationType: "Event"
-  } as Lambda.InvocationRequest
+  } as Lambda.InvocationRequest;
 }
