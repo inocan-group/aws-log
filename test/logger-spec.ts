@@ -91,15 +91,15 @@ describe("Logger Basics", () => {
     const api = logger().lambda(lambdaEvent, lambdaContext, {
       foo: 1,
       bar: 2,
-      context: "not-conflict"
+      context: "conflict"
     });
     const config = getState();
     expect(config.context).to.be.an("object");
     expect(config.context.functionName).to.equal(lambdaContext.functionName);
     expect(config.context.logStreamName).to.equal(lambdaContext.logStreamName);
-    expect(config.context.foo).to.equal(1);
-    expect(config.context.bar).to.equal(2);
-    expect(config.context.context).to.equal("not-conflict");
+    expect(config.localContext.foo).to.equal(1);
+    expect(config.localContext.bar).to.equal(2);
+    expect(config.localContext.context).to.equal("conflict"); // will become a conflict when logged
     expect(config.correlationId).is.equal(
       lambdaEvent.headers["@x-correlation-id"]
     );
@@ -110,20 +110,18 @@ describe("Logger Basics", () => {
     const api = logger().lambda(lambdaEvent, lambdaContext, {
       foo: 1,
       bar: 2,
-      context: "not-conflict"
+      context: "conflict"
     });
 
     process.env.LOG_TESTING = "true";
     const response: IAwsLog = api.log("this is a test", {
       foo: 1,
-      bar: 2,
-      context: "conflict"
+      bar: 2
     });
     process.env.LOG_TESTING = "";
 
     expect(response._context).to.equal("conflict");
     expect(response.context).to.be.an("object");
-    expect(response.context.context).to.equal("not-conflict");
   });
 
   it("nothing logged when logging level is too low", () => {

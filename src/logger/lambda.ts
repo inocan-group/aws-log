@@ -1,5 +1,9 @@
-import { IDictionary, IAWSLambdaProxyIntegrationRequest, IAWSLambaContext } from "common-types";
-import { setCorrelationId, setContext } from "./state";
+import {
+  IDictionary,
+  IAWSLambdaProxyIntegrationRequest,
+  IAWSLambaContext
+} from "common-types";
+import { setCorrelationId, setContext, setLocalContext } from "./state";
 import { findCorrelationId, createCorrelationId } from "./correlationId";
 import { loggingApi } from "./logging-api";
 
@@ -15,10 +19,11 @@ export function lambda(
   setCorrelationId(findCorrelationId(event, ctx) || createCorrelationId());
 
   setContext({
-    ...options,
     ...ctx,
     ...{ logger: "aws-log" }
   });
+
+  setLocalContext(options);
 
   return loggingApi;
 }

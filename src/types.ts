@@ -1,12 +1,15 @@
 import { IDictionary } from "common-types";
 
-
 export interface IAwsLog extends IDictionary {
   /** a unique ID for a graph/fan of related function executions */
   "@x-correlation-id": string;
   "@severity": LogLevel;
   message: string;
   context: IAwsLogContext;
+}
+
+export interface IAwsLogWithoutContext extends Partial<IAwsLog> {
+  message: string;
 }
 
 export enum LogLevel {

@@ -1,6 +1,11 @@
 import { IDictionary } from "common-types";
-import { getSeverity, getContext, getRootProperties } from "./state";
-import { LogLevel, IAwsLog } from "../types";
+import {
+  getSeverity,
+  getContext,
+  getRootProperties,
+  getLocalContext
+} from "./state";
+import { LogLevel, IAwsLog, IAwsLogWithoutContext } from "../types";
 
 export const loggingApi = {
   /** an alias for the "info" level of logging */
@@ -41,7 +46,15 @@ function avoidContextCollision(options: IDictionary) {
 export function stdout(hash: Partial<IAwsLog> & { message: string }) {
   const context = getContext();
   const rootProps = getRootProperties();
-  const output: IAwsLog = { ...hash, ...rootProps, ...{ context } };
+  const localContext = getLocalContext();
+  const output: IAwsLog = {
+    ...(avoidContextCollision({
+      ...hash,
+      ...localContext
+    }) as IAwsLogWithoutContext),
+    ...rootProps,
+    ...{ context }
+  };
 
   if (process.env.LOG_TESTING) {
     return output;
@@ -54,17 +67,16 @@ export function debug(message: string, params: IDictionary = {}) {
   if (getSeverity() === LogLevel.debug) {
     return stdout({
       ...{ message },
-      ...avoidContextCollision(params),
+      ...params
     });
   }
 }
 
 export function info(message: string, params: IDictionary = {}) {
-
   if (getSeverity() <= LogLevel.info) {
     return stdout({
       ...{ message },
-      ...avoidContextCollision(params)
+      ...params
     });
   }
 }
@@ -73,16 +85,24 @@ export function warn(message: string, params: IDictionary = {}) {
   if (getSeverity() <= LogLevel.warn) {
     return stdout({
       ...{ message },
-      ...avoidContextCollision(params)
+      ...params
     });
   }
 }
 
 export function error(
-  msgOrError: string | IDictionary,
-  paramsOrErr?: IDictionary,
-  err?: IDictionary
+  msgOrError: string | IDictionary | Error,
+  paramsOrErr?: IDictionary | Error,
+  err?: IDictionary | Error
 ) {
   const context = getContext();
+  if (err) {
+    return stdout({
+      ...{ message: String(msgOrError) },
+      ...paramsOrErr,
+      ...(err as Error)
+    });
+  }
+
   // errors are logged at all log levels
 }

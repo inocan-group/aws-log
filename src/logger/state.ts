@@ -8,6 +8,7 @@ export interface IAwsLogState {
   correlationId: string;
   severity: LogLevel;
   context: IAwsLogContext;
+  localContext: IDictionary;
 }
 
 export const contextApi = {
@@ -21,6 +22,7 @@ export const contextApi = {
 
 const defaultState: IAwsLogState = {
   context: { logger: "aws-log" },
+  localContext: {},
   correlationId: "",
   severity: undefined
 };
@@ -33,11 +35,35 @@ let rootProperties = () => ({
   "@severity": activeState.severity
 });
 
+/**
+ * Set the "context" which are properties sent with
+ * every request and hanging off the "context" property
+ */
 export function setContext(ctx: IDictionary) {
   activeState.context = {
     ...ctx,
     ...defaultState.context
   };
+
+  return loggingApi;
+}
+
+/**
+ * Sets a localized context, this is a set of properties which are included
+ * as part of the base properties of the message. Where the local logging has
+ * a conflicting property name the local logging will overwrite this context
+ */
+export function setLocalContext(ctx: IDictionary) {
+  activeState.localContext = ctx;
+
+  return loggingApi;
+}
+
+/**
+ * Allows the local context to be added to after the intial setting
+ */
+export function addToLocalContext(ctx: IDictionary) {
+  activeState.localContext = { ...activeState.localContext, ...ctx };
 
   return loggingApi;
 }
@@ -57,6 +83,10 @@ export function getContext() {
       "unknown"
   };
   return { ...activeState.context, ...envContext };
+}
+
+export function getLocalContext() {
+  return activeState.localContext || {};
 }
 
 export function getCorrelationId() {
