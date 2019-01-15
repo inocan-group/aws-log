@@ -112,4 +112,6 @@ export function error(
 
 export function addToLocalContext(ctx: IDictionary) {
   addLocalContext(ctx);
+
+  return loggingApi;
 }
