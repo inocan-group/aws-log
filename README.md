@@ -26,9 +26,9 @@ Now that the dependendency is installed you can import it in your code like so:
 
 ```typescript
 import logger from "aws-log";
-const { log, debug, info, warn, error } = logger();
+const log = logger();
 
-log("this is a log message", { foo: 1, bar: 2 });
+log.info("this is a log message", { foo: 1, bar: 2 });
 ```
 
 In this simple example this will produce the following output to STDOUT:
@@ -46,9 +46,7 @@ In this simple example this will produce the following output to STDOUT:
 Things to note about usage:
 
 - You must call the `logger()` function to get the primary logging functions which are:
-  `log`, `info`, `debug`, `warn` and `error`.
-  > **Note:** `log` is just an _alias_ for the `info`; we find `log` to be a little easier
-  > to use but traditional logging systems use `info` more consistenly.
+  `info`, `debug`, `warn` and `error`
 - we ALWAYS get a JSON object as a return (good for logging frameworks)
 - The first calling parameter is mapped to the `message` parameter in the output
 - The second calling parameter is _optional_ but allows you to add other structured
@@ -71,16 +69,25 @@ Things to note about usage:
   > AWS includes the timestamp by default on each log entry. Please do ensure your
   > _shipper_ function picks up the timestamp and adds it into the JSON payload.
 
-## Persistent Context
+## Context
 
-While each log message has unique data which you want to log, there is also "context" that
-when placed next to the specific message can make the data much more searchable and
-thereby more useful. There are a few ways to achieve this context but here's the most
-basic:
+While each log message has unique data which you will want to log, there is also "context"
+that when placed next to the specific message can make the data much more searchable and
+thereby more useful. This idea of _context_ will be broken into two parts:
+
+- **Global Context:** context that is relevant for the full execution of the function and
+  and withe paramters you would never expect to be overwritten by the local logging.
+- **Local Context:** context which may only be relavent for a shorter period or _might_
+  be  
+  overwritten by the local logging event.
+
+### Global Context
+
+There are a two primary ways to set global context but here's the most basic:
 
 ```typescript
-const { log, debug, info, warn, error } = logger().context({ foo: "bar" });
-log("this is a log message", { foo: 1, bar: 2 });
+const log = logger().context({ foo: "bar" });
+log.info("this is a log message", { foo: 1, bar: 2 });
 ```
 
 In this example the output would be:
@@ -99,14 +106,14 @@ In this example the output would be:
 }
 ```
 
-Every call to `debug`, `info` / `log`, `warn` and `error` will now always include the
-properties you have passed in as **context**.
+Every call to `debug`, `info`, `warn` and `error` will now always include the properties
+you have passed in as **context**.
 
 > Note: If your specific log content includes a property `context` then the logger will
 > rename it to `_context_`. It is important for function-to-function consistency that the
 > meaning of "context" remain consistent.
 
-## Logging Context in AWS Lambda
+### Global Context in AWS Lambda
 
 The signature of a Lambda function looks like this:
 
@@ -171,7 +178,7 @@ requestId: string;
 packageVersion: string;
 ```
 
-## Files External to Handler
+### Lambda Context outside of Handler Function
 
 We've already discussed the utility of passing the `event` and `context` attributes to the
 logger and in the handler function we have a simple way of achieving this as these two
@@ -179,7 +186,7 @@ objects are immediately available:
 
 ```typescript
 export function handler(event, context) {
-  const { log, debug, info, warn, error } = logger().lambda(event, context);
+  const log = logger().lambda(event, context);
   // ...
 }
 ```
@@ -189,13 +196,13 @@ in logging that's in a utility function, etc.? The answer is after the context h
 set with `logger().lambda(event, context)` you can simply write:
 
 ```typescript
-const { log, debug, info, warn, error } = logger().reloadContext();
+const log = logger().reloadContext();
 function doSomething() {
-  log("something has happened");
+  log.info("something has happened");
 }
 ```
 
-## More Context
+### More Context
 
 The original, and generic, `logger.context(obj)` method allowed us to add whatever
 name/value pairs we pleased but with `logger.lambda(event, context)` we rely on
@@ -204,9 +211,9 @@ wherever you want to add more you can do so easily enough:
 
 ```typescript
 // in the handler function
-const { log } = logger().lambda(event, context, moreContext);
+const log = logger().lambda(event, context, moreContext);
 // somewhere else
-const { log } = logger().reloadContext(moreContext);
+const log = logger().reloadContext(moreContext);
 ```
 
 > **NOTE:** that while both signatures are valid, the first one is STRONGLY recommended
@@ -217,9 +224,10 @@ const { log } = logger().reloadContext(moreContext);
 ## Correlation ID
 
 The correlation ID -- which shows up as `@x-correlation-id` in the log entry -- is an ID
-who's scope is meant to stay consistent for a whole _graph_ of function executions. This
-scoping is SUPER useful as within AWS most logging is isolated to a single function
-execution but in a micro-services architecture this often represents too narrow a view.
+who's scope is meant to stay consistent for a whole _graph_ or _fan out_ of function
+executions. This scoping is SUPER useful as within AWS most logging is isolated to a
+single function execution but in a micro-services architecture this often represents too
+narrow a view.
 
 The way the correlation ID is set is when "context" is provided -- typically via the
 `lambda(event, context)` parameters -- it looks for a property `x-correlation-id` in the
@@ -232,7 +240,7 @@ the absence of a correlation ID results in one being created automatically. Once
 created though it must be _forwarded_ to all other executions downstream. This is achieved
 via a helper method provided by this library called `invoke`.
 
-### Passing the Correlation ID with `invoke`
+## The `invoke` Function
 
 The standard way of calling a Lambda functon from within a Lambda is through the
 [invoke](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Lambda.html#invoke-property)
@@ -261,9 +269,9 @@ try {
 > because `invoke` can also be asynchronous! At this point no one should use the
 > `invokeAsync` call as it is deprecated and therefore we ignore exposing this in our API.
 
-### The Request API for `invoke`
+## The `invoke` API
 
-The request API only requires two parameters:
+The **invoke** API only requires two parameters:
 
 - the [ARN](https://docs.aws.amazon.com/AmazonS3/latest/dev/s3-arn-format.html)
   representing the function you are calling
@@ -278,8 +286,7 @@ await invoke("arn:aws:lambda:us-east-1:837955399040:function:myapp-prod-myfuncti
 });
 ```
 
-Now that's sort of compact but you can make it **much** more compact if you follow a few
-conventions:
+To make it more compact, you can set the following environment variables:
 
 - First, you don't actually need the `arn:aws:lambda` at all, it will be assumed if you
   don't start with "arn".
@@ -304,6 +311,36 @@ intellisense) but basically this gives you an option to:
 
 - turn on the "dryrun" feature AWS exposes
 - specify a specific version of the function (rather than the default)
+
+## The `stepFunction` API
+
+[AWS Step Functions](https://aws.amazon.com/step-functions/) are quite useful tool in the
+"serverless toolkit" but they also provide a manner in which many Lambda functions will be
+executed together in concert. For this reason we must ensure that the Correlation ID is
+maintained throughout this fan out. Fortunately this easily achieved with the
+**stepFunction** API surface:
+
+```typescript
+// To start a step function
+import { stepFunction } from "aws-log";
+
+function anyFunction() {
+  stepFunction.start(arn, props);
+}
+```
+
+Then in any functions which are involved in the _steps_ of a step function be sure to
+complete your handler with:
+
+```typescript
+import { logger, stepFunction } = "aws=log";
+
+function handler(event, context, callback) {
+  const log = logger().lambda(event, context);
+  /** ... */
+  callback(null, stepFunction.response( response ));
+}
+```
 
 ## Shipping
 
