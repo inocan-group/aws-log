@@ -25,7 +25,7 @@ yarn add aws-log
 Now that the dependendency is installed you can import it in your code like so:
 
 ```typescript
-import logger from "aws-log";
+import { logger } from "aws-log";
 const log = logger();
 
 log.info("this is a log message", { foo: 1, bar: 2 });
