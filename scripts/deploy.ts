@@ -56,8 +56,8 @@ async function build(fns?: string[]) {
   return;
 }
 
-async function deploy(stage: string, fns: string[] = []) {
-  const msg = fns.length !== 0 ? `` : ``;
+async function deploy(stage: string, profile?: string, fns: string[] = []) {
+  const awsProfile = profile ? `--aws-profile ${profile}` : ``;
 
   try {
     if (fns.length === 0) {
@@ -65,9 +65,9 @@ async function deploy(stage: string, fns: string[] = []) {
         chalk.yellow(`- starting full serverless deployment to ${chalk.bold(stage)}`)
       );
       console.log(
-        chalk.grey(`- sls deploy --aws-s3-accelerate  --stage ${stage} --verbose`)
+        chalk.grey(`- sls deploy --aws-s3-accelerate  --stage ${stage} ${awsProfile} --verbose`)
       );
-      await asyncExec(`sls deploy --aws-s3-accelerate  --stage ${stage} --verbose`);
+      await asyncExec(`sls deploy --aws-s3-accelerate  --stage ${stage} ${awsProfile} --verbose`);
       console.log(chalk.green.bold(`- successful serverless deployment 🚀`));
     } else {
       const functions: string[] = findFunctions(fns);
@@ -85,7 +85,7 @@ async function deploy(stage: string, fns: string[] = []) {
         functions.map(fn => {
           promises.push(
             asyncExec(
-              `sls deploy function --force --aws-s3-accelerate --function ${fn} --stage ${stage}`
+              `sls deploy function --force --aws-s3-accelerate --function ${fn} --stage ${stage} ${awsProfile}`
             )
           );
         });
@@ -99,7 +99,7 @@ async function deploy(stage: string, fns: string[] = []) {
             )} to ${chalk.bold(stage)} environment.`
           )
         );
-        await asyncExec(`sls deploy --name ${fns.join(" --function ")} --stage ${stage}`);
+        await asyncExec(`sls deploy --name ${fns.join(" --function ")} --stage ${stage} ${awsProfile}`);
       }
       console.log(chalk.green.bold(`- 🚀  successful serverless deployment `));
     }
@@ -108,17 +108,14 @@ async function deploy(stage: string, fns: string[] = []) {
   }
 }
 
-function getFunctionIfScoped(): string | undefined {
-  return undefined;
-}
-
 // MAIN
 
 (async () => {
-  const { params, options } = parseArgv()("--help", "--profile", "--key");
+  const { params, options } = parseArgv()("--help", "--profile", "--prod");
   const sls = await serverlessConfig();
-
+  const profile = options.profile ? options.profile : null;
   const stage = options.prod ? "prod" : sls.provider.stage || "dev";
+
   if (!options.skip) {
     try {
       await build(params);
@@ -128,5 +125,5 @@ function getFunctionIfScoped(): string | undefined {
       throw e;
     }
   }
-  await deploy(stage, params);
+  await deploy(stage, profile, params);
 })();
