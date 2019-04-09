@@ -312,6 +312,10 @@ intellisense) but basically this gives you an option to:
 - turn on the "dryrun" feature AWS exposes
 - specify a specific version of the function (rather than the default)
 
+Now if you weren't already sold on why you should be invoking using this more compact API than AWS's provide API, here's the clincher ... using `invoke` ensures that `x-correlation-id` and other contextual parameters are passed along to the next function so that logging in the _next_ function will have the same correlation id (which is actually the _intent_ of a correlation id). 
+
+> To see what parameters are being pass forward to the next function look at the `IAwsInvocationContext` interface defined in [types.ts](https://github.com/inocan-group/aws-log/blob/master/src/types.ts)
+
 ## The `stepFunction` API
 
 [AWS Step Functions](https://aws.amazon.com/step-functions/) are quite useful tool in the

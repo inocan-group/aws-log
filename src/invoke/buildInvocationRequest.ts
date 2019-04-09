@@ -14,28 +14,23 @@ import { Lambda } from "aws-sdk";
  * @param arn the ARN identification of the resource being called in
  *    the structured components that parseArn() provides
  */
-export function buildInvocationRequest(arn: IParsedArn, request: IDictionary) {
+export function buildInvocationRequest<T extends IDictionary>(
+  arn: IParsedArn,
+  request: T
+) {
   const FunctionName = `arn:aws:lambda:${arn.region}:${arn.account}:function:${
     arn.appName
   }-${arn.fn}`;
-  let Payload: string;
-  if (request.headers) {
-    request.headers["x-correlation-id"] = getCorrelationId();
-    request.headers["x-calling-function"] = getContext().functionName;
-    request.headers["x-calling-request-id"] = getContext().requestId;
-    Payload = JSON.stringify(request);
-  } else {
-    Payload = JSON.stringify({
-      ...request,
-      ...{
-        headers: {
-          "x-correlation-id": getCorrelationId(),
-          "x-calling-function": getContext().functionName,
-          "x-calling-request-id": getContext().requestId
-        }
-      }
-    });
-  }
+  const correlationHeaders = {
+    "x-correlation-id": getCorrelationId(),
+    "x-calling-function": getContext().functionName,
+    "x-calling-request-id": getContext().requestId
+  };
+
+  request.headers = request.headers
+    ? { ...correlationHeaders, ...request.headers }
+    : correlationHeaders;
+  const Payload = JSON.stringify(request);
 
   return {
     FunctionName,

@@ -15,7 +15,8 @@ import { StepFunctions } from "aws-sdk";
  */
 export function buildStepFunctionRequest(
   arn: IParsedArn,
-  request: IDictionary
+  request: IDictionary,
+  name?: string
 ) {
   const stateMachineArn = `arn:aws:states:${arn.region}:${
     arn.account
@@ -39,6 +40,10 @@ export function buildStepFunctionRequest(
       }
     });
   }
+
+  // if(!name) {
+  //   name = 
+  // }
 
   return {
     stateMachineArn,

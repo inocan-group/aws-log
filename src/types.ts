@@ -4,12 +4,29 @@ export interface IAwsLog extends IDictionary {
   /** a unique ID for a graph/fan of related function executions */
   "@x-correlation-id": string;
   "@severity": LogLevel;
-  message: string;
+  /** the text/unstructured description that is passed in as first param of all log levels */
+  "@message": string;
   context: IAwsLogContext;
 }
 
+/**
+ * **IAwsInvocationContext**
+ *
+ * When you use the `invoke` or `stepFunction` API's you are calling another
+ * function and _of course_ get to state what "Request" object you will be
+ * sending in but in addition to this information calling these API's will
+ * add these properties automatically for you.
+ */
+export interface IAwsInvocationContext {
+  headers: {
+    "x-correlation-id": string;
+    "x-calling-function": string;
+    "x-calling-request-id": string;
+  };
+}
+
 export interface IAwsLogWithoutContext extends Partial<IAwsLog> {
-  message: string;
+  "@message": string;
 }
 
 export enum LogLevel {

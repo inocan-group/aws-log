@@ -1,6 +1,6 @@
 {
   "name": "aws-log",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "A logging framework for AWS Lambda",
   "license": "MIT",
   "repository": "https://github.com/inocan-group/aws-log",
@@ -41,7 +41,6 @@
     "cli": "ts-node cli/index.ts --"
   },
   "devDependencies": {
-    "@types/aws-sdk": "^2.7.0",
     "@types/chai": "^4.1.7",
     "@types/chance": "^1.0.1",
     "@types/faker": "^4.1.4",

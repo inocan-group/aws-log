@@ -48,7 +48,7 @@ function avoidContextCollision(options: IDictionary) {
  * @param hash the hash/dictionary coming from one of the logging
  * functions; it should include a "message", optional hash values
  */
-export function stdout(hash: Partial<IAwsLog> & { message: string }) {
+export function stdout(hash: Partial<IAwsLog> & { "@message": string }) {
   const context = getContext();
   const rootProps = getRootProperties();
   const localContext = getLocalContext();
@@ -71,7 +71,7 @@ export function stdout(hash: Partial<IAwsLog> & { message: string }) {
 export function debug(message: string, params: IDictionary = {}) {
   if (getSeverity() === LogLevel.debug) {
     return stdout({
-      ...{ message },
+      ...{ "@message": message },
       ...params
     });
   }
@@ -80,7 +80,7 @@ export function debug(message: string, params: IDictionary = {}) {
 export function info(message: string, params: IDictionary = {}) {
   if (getSeverity() <= LogLevel.info) {
     return stdout({
-      ...{ message },
+      ...{ "@message": message },
       ...params
     });
   }
@@ -89,7 +89,7 @@ export function info(message: string, params: IDictionary = {}) {
 export function warn(message: string, params: IDictionary = {}) {
   if (getSeverity() <= LogLevel.warn) {
     return stdout({
-      ...{ message },
+      ...{ "@message": message },
       ...params
     });
   }
@@ -103,7 +103,7 @@ export function error(
   const context = getContext();
   if (err) {
     return stdout({
-      ...{ message: String(msgOrError) },
+      ...{ "@message": String(msgOrError) },
       ...paramsOrErr,
       ...(err as Error)
     });
