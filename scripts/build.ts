@@ -1,12 +1,5 @@
-// tslint:disable:no-implicit-dependencies
 import chalk from "chalk";
 import "../test/testing/test-console";
-import {
-  IStateMachine,
-  IDictionary,
-  IServerlessConfig,
-  IServerlessFunction
-} from "common-types";
 import { serverless } from "./lib/serverless";
 import { transpileJavascript, clearTranspiledJS } from "./lib/js";
 

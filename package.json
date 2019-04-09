@@ -1,13 +1,16 @@
 {
-  "name": "log-shipper",
-  "version": "0.1.0",
-  "description": "log-shipper",
+  "name": "aws-log",
+  "version": "0.3.1",
+  "description": "A logging framework for AWS Lambda",
   "license": "MIT",
-  "repository": "https://your-server.com/inocan_move/log-shipper",
+  "repository": "https://github.com/inocan-group/aws-log",
   "author": "Ken Snyder <ken@ken.net>",
   "keywords": [
     "serverless",
-    "typescript"
+    "typescript",
+    "aws",
+    "lambda",
+    "logging"
   ],
   "files": [
     "lib"
@@ -40,7 +43,6 @@
     "cli": "ts-node cli/index.ts --"
   },
   "devDependencies": {
-    "@types/aws-sdk": "^2.7.0",
     "@types/chai": "^4.1.7",
     "@types/chance": "^1.0.1",
     "@types/faker": "^4.1.4",
