@@ -11,17 +11,6 @@ export interface IAwsLogState {
   localContext: IDictionary;
 }
 
-export const contextApi = {
-  /** set the context for logging with any hash object */
-  context: setContext,
-  /** lookup a value in the current context */
-  getContext: getContext,
-  /** set the context for logging with the Lambda event and context */
-  lambda,
-  /** allow for reloading context to last known point */
-  reloadContext: restoreState
-};
-
 const defaultState: IAwsLogState = {
   context: { logger: "aws-log" },
   localContext: {},
@@ -74,8 +63,16 @@ export function getState() {
   return activeState;
 }
 
-export function getContext(): IAwsLogContext;
-export function getContext(prop?: keyof IAwsLogContext) {
+export type IGetContext = IGetAllContext & IGetSomeContext;
+export interface IGetAllContext {
+  (): IAwsLogContext;
+}
+export interface IGetSomeContext {
+  (prop: keyof IAwsLogContext): string;
+}
+
+/** comment */
+export const getContext: IGetContext = (prop?: keyof IAwsLogContext) => {
   const envContext = {
     awsRegion: process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "unknown",
     stage:
@@ -83,8 +80,10 @@ export function getContext(prop?: keyof IAwsLogContext) {
   };
   const context = { ...activeState.context, ...envContext };
 
-  return prop ? context[prop as keyof typeof context] : (context as IAwsLogContext);
-}
+  return prop
+    ? (context[prop as keyof typeof context] as any)
+    : (context as IAwsLogContext);
+};
 
 export function getLocalContext() {
   return activeState.localContext || {};
@@ -135,3 +134,12 @@ export function getSeverity() {
 function archiveState(state: IAwsLogState) {
   archivedState = state;
 }
+
+export const contextApi = {
+  /** set the context for logging with any hash object */
+  context: setContext,
+  /** set the context for logging with the Lambda event and context */
+  lambda,
+  /** allow for reloading context to last known point */
+  reloadContext: restoreState
+};
