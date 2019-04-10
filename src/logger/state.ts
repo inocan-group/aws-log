@@ -14,6 +14,8 @@ export interface IAwsLogState {
 export const contextApi = {
   /** set the context for logging with any hash object */
   context: setContext,
+  /** lookup a value in the current context */
+  getContext: getContext,
   /** set the context for logging with the Lambda event and context */
   lambda,
   /** allow for reloading context to last known point */
@@ -72,17 +74,16 @@ export function getState() {
   return activeState;
 }
 
-export function getContext() {
+export function getContext(): IAwsLogContext;
+export function getContext(prop?: keyof IAwsLogContext) {
   const envContext = {
-    awsRegion:
-      process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "unknown",
+    awsRegion: process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "unknown",
     stage:
-      process.env.ENVIRONMENT ||
-      process.env.STAGE ||
-      process.env.AWS_STAGE ||
-      "unknown"
+      process.env.ENVIRONMENT || process.env.STAGE || process.env.AWS_STAGE || "unknown"
   };
-  return { ...activeState.context, ...envContext };
+  const context = { ...activeState.context, ...envContext };
+
+  return prop ? context[prop as keyof typeof context] : (context as IAwsLogContext);
 }
 
 export function getLocalContext() {
@@ -120,9 +121,7 @@ export function initSeverity() {
     return;
   }
 
-  setSeverity(
-    !Number.isNaN(Number(s)) ? Number(s) : logLevelLookup[s.toUpperCase()]
-  );
+  setSeverity(!Number.isNaN(Number(s)) ? Number(s) : logLevelLookup[s.toUpperCase()]);
 }
 
 export function setSeverity(s: LogLevel) {
