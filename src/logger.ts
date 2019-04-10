@@ -1,11 +1,6 @@
 import { IDictionary } from "common-types";
 import { loggingApi } from "./logger/logging-api";
-import {
-  initSeverity,
-  setCorrelationId,
-  clearState,
-  contextApi
-} from "./logger/state";
+import { initSeverity, setCorrelationId, clearState, contextApi } from "./logger/state";
 import { createCorrelationId } from "./logger/correlationId";
 export { setSeverity, setContext, getState } from "./logger/state";
 

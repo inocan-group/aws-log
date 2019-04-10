@@ -20,8 +20,7 @@ const lambdaEvent: IDictionary = {
 const lambdaContext: IAWSLambaContext = {
   functionName: "foobar",
   functionVersion: "1.0",
-  invokedFunctionArn:
-    "arn:aws:lambda:us-east-1:845955389040:function:abc-prod-fn",
+  invokedFunctionArn: "arn:aws:lambda:us-east-1:845955389040:function:abc-prod-fn",
   memoryLimitInMB: "512",
   awsRequestId: "rid1234",
   logGroupName: "log-group",
@@ -82,9 +81,7 @@ describe("Logger Basics", () => {
     expect(config.context).to.be.an("object");
     expect(config.context.functionName).to.equal(lambdaContext.functionName);
     expect(config.context.logStreamName).to.equal(lambdaContext.logStreamName);
-    expect(config.correlationId).is.equal(
-      lambdaEvent.headers["@x-correlation-id"]
-    );
+    expect(config.correlationId).is.equal(lambdaEvent.headers["@x-correlation-id"]);
   });
 
   it("Initialization with lambda(), using additional context works as expected", () => {
@@ -100,9 +97,7 @@ describe("Logger Basics", () => {
     expect(config.localContext.foo).to.equal(1);
     expect(config.localContext.bar).to.equal(2);
     expect(config.localContext.context).to.equal("conflict"); // will become a conflict when logged
-    expect(config.correlationId).is.equal(
-      lambdaEvent.headers["@x-correlation-id"]
-    );
+    expect(config.correlationId).is.equal(lambdaEvent.headers["@x-correlation-id"]);
   });
 
   it('conflict with "context" property resolved', () => {
@@ -173,6 +168,32 @@ describe("Logger Basics", () => {
     const response = log.info("test message", { p1: 1, p2: 2 });
     expect(response.foo).to.equal("bar");
     expect(response.baz).to.equal("test");
+  });
+
+  it("Getting context returns all context", async () => {
+    process.env.LOG_LEVEL = String(LogLevel.info);
+    process.env.LOG_TESTING = "true";
+    const log = logger().lambda(lambdaEvent, lambdaContext, { baz: "test" });
+    const ctx = log.getContext();
+    expect(ctx).to.be.an("object");
+
+    ["awsRegion", "stage", "functionName", "awsRequestId"].map(prop => {
+      expect(ctx).to.haveOwnProperty(prop);
+      expect(ctx[prop]).to.be.a("string");
+    });
+  });
+
+  it("Getting a single prop off context also works", async () => {
+    process.env.LOG_LEVEL = String(LogLevel.info);
+    process.env.AWS_STAGE = "test";
+    process.env.LOG_TESTING = "true";
+    const log = logger().lambda(lambdaEvent, lambdaContext, { baz: "test" });
+
+    expect(log.getContext).to.be.a("function");
+    const stage = log.getContext("stage");
+    expect(stage)
+      .to.be.an("string")
+      .and.equals("test");
   });
 });
 

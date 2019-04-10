@@ -4,9 +4,10 @@ import {
   getContext,
   getRootProperties,
   getLocalContext,
-  addToLocalContext as addLocalContext
+  addToLocalContext as addLocalContext,
+  getCorrelationId
 } from "./state";
-import { LogLevel, IAwsLog, IAwsLogWithoutContext } from "../types";
+import { LogLevel, IAwsLog, IAwsLogWithoutContext, IAwsLogContext } from "../types";
 
 export const loggingApi = {
   /** an alias for the "info" level of logging */
@@ -22,7 +23,9 @@ export const loggingApi = {
   /**
    * Allows the local context to be appended to
    */
-  addToLocalContext
+  addToLocalContext,
+  getContext: (prop?: keyof IAwsLogContext) => (prop ? getContext(prop) : getContext()),
+  getCorrelationId
 };
 
 /**
