@@ -1,4 +1,4 @@
-import { IDictionary } from "common-types";
+import { IDictionary, numberAsString } from "common-types";
 
 export interface IAwsLog extends IDictionary {
   /** a unique ID for a graph/fan of related function executions */
@@ -57,5 +57,17 @@ export interface IAwsLogContext extends IDictionary {
   /** the function version used */
   functionVersion?: string;
   /** the AWS requestId which is unique for this function call */
-  requestId?: string;
+  awsRequestId?: string;
+  /** the full ARN name for the given function  */
+  invokedFunctionArn?: string;
+  /** the structured path to this functions logging group */
+  logGroupName?: string;
+  logStreamName?: string;
+  /**
+   * boolean flag indicating whether function should wait for the event
+   * loop to conclude before exiting */
+  callbackWaitsForEmptyEventLoop?: boolean;
+  memoryLimitInMB?: numberAsString;
+  stage?: "dev" | "prod" | "stage" | "test";
+  awsRegion?: string;
 }
