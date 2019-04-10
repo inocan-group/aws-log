@@ -63,16 +63,8 @@ export function getState() {
   return activeState;
 }
 
-export type IGetContext = IGetAllContext & IGetSomeContext;
-export interface IGetAllContext {
-  (): IAwsLogContext;
-}
-export interface IGetSomeContext {
-  (prop: keyof IAwsLogContext): string;
-}
-
 /** comment */
-export const getContext: IGetContext = (prop?: keyof IAwsLogContext) => {
+export const getContext = () => {
   const envContext = {
     awsRegion: process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "unknown",
     stage:
@@ -80,9 +72,7 @@ export const getContext: IGetContext = (prop?: keyof IAwsLogContext) => {
   };
   const context = { ...activeState.context, ...envContext };
 
-  return prop
-    ? (context[prop as keyof typeof context] as any)
-    : (context as IAwsLogContext);
+  return context as IAwsLogContext;
 };
 
 export function getLocalContext() {
