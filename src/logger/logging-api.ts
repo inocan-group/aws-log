@@ -24,7 +24,7 @@ export const loggingApi = {
    * Allows the local context to be appended to
    */
   addToLocalContext,
-  getContext: (prop?: keyof IAwsLogContext) => (prop ? getContext(prop) : getContext()),
+  getContext: () => getContext(),
   getCorrelationId
 };
 

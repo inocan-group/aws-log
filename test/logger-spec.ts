@@ -182,19 +182,6 @@ describe("Logger Basics", () => {
       expect(ctx[prop]).to.be.a("string");
     });
   });
-
-  it("Getting a single prop off context also works", async () => {
-    process.env.LOG_LEVEL = String(LogLevel.info);
-    process.env.AWS_STAGE = "test";
-    process.env.LOG_TESTING = "true";
-    const log = logger().lambda(lambdaEvent, lambdaContext, { baz: "test" });
-
-    expect(log.getContext).to.be.a("function");
-    const stage = log.getContext("stage");
-    expect(stage)
-      .to.be.an("string")
-      .and.equals("test");
-  });
 });
 
 function testLoggingApi(api: any) {
