@@ -28,6 +28,8 @@ export const loggingApi = {
   getCorrelationId
 };
 
+export type ILoggerApi = typeof loggingApi;
+
 /**
  * If the context object passed in contains a "context" property
  * move it out of the way so it doesn't collide with
