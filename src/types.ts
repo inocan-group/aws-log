@@ -6,7 +6,7 @@ export interface IAwsLog extends IDictionary {
   "@severity": LogLevel;
   /** the text/unstructured description that is passed in as first param of all log levels */
   "@message": string;
-  context: IAwsLogContext;
+  "@context": IAwsLogContext;
 }
 
 /**

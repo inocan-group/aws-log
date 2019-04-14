@@ -33,9 +33,9 @@ export const loggingApi = {
  * move it out of the way so it doesn't collide with
  */
 function avoidContextCollision(options: IDictionary) {
-  if (options.context) {
-    options["_context"] = options.context;
-    delete options.context;
+  if (options["@context"]) {
+    options._context = options["@context"];
+    delete options["@context"];
   }
 
   return options;
@@ -61,7 +61,7 @@ export function stdout(hash: Partial<IAwsLog> & { "@message": string }) {
       ...localContext
     }) as IAwsLogWithoutContext),
     ...rootProps,
-    ...{ context }
+    ...{ "@context": context }
   };
 
   if (process.env.LOG_TESTING) {

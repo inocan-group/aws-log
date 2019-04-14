@@ -41,9 +41,9 @@ describe("Logger Basics", () => {
     const config = getState();
     expect(config.correlationId).is.not.equal(undefined);
     expect(config.severity).is.equal(LogLevel.info);
-    expect(config.context).is.an("object");
-    expect(Object.keys(config.context)).has.lengthOf(1);
-    expect(config.context.logger).to.equal("aws-log");
+    expect(config["@context"]).is.an("object");
+    expect(Object.keys(config["@context"])).has.lengthOf(1);
+    expect(config["@context"].logger).to.equal("aws-log");
   });
   it("Initialization with context() works as expected", () => {
     // process.env.LOG_LEVEL="info";
@@ -56,10 +56,10 @@ describe("Logger Basics", () => {
 
     expect(config.correlationId).is.not.equal(undefined);
     expect(config.severity).is.equal(LogLevel.info);
-    expect(config.context).to.be.an("object");
-    expect(config.context.foo).to.equal(1);
-    expect(config.context.bar).to.equal(2);
-    expect(config.context.logger).to.equal("aws-log");
+    expect(config["@context"]).to.be.an("object");
+    expect(config["@context"].foo).to.equal(1);
+    expect(config["@context"].bar).to.equal(2);
+    expect(config["@context"].logger).to.equal("aws-log");
   });
 
   it("Severity responds to LOG_LEVEL environment variable", () => {
@@ -78,9 +78,9 @@ describe("Logger Basics", () => {
     missingContextApi(api);
     const config = getState();
 
-    expect(config.context).to.be.an("object");
-    expect(config.context.functionName).to.equal(lambdaContext.functionName);
-    expect(config.context.logStreamName).to.equal(lambdaContext.logStreamName);
+    expect(config["@context"]).to.be.an("object");
+    expect(config["@context"].functionName).to.equal(lambdaContext.functionName);
+    expect(config["@context"].logStreamName).to.equal(lambdaContext.logStreamName);
     expect(config.correlationId).is.equal(lambdaEvent.headers["@x-correlation-id"]);
   });
 
@@ -91,9 +91,9 @@ describe("Logger Basics", () => {
       context: "conflict"
     });
     const config = getState();
-    expect(config.context).to.be.an("object");
-    expect(config.context.functionName).to.equal(lambdaContext.functionName);
-    expect(config.context.logStreamName).to.equal(lambdaContext.logStreamName);
+    expect(config["@context"]).to.be.an("object");
+    expect(config["@context"].functionName).to.equal(lambdaContext.functionName);
+    expect(config["@context"].logStreamName).to.equal(lambdaContext.logStreamName);
     expect(config.localContext.foo).to.equal(1);
     expect(config.localContext.bar).to.equal(2);
     expect(config.localContext.context).to.equal("conflict"); // will become a conflict when logged
@@ -105,7 +105,7 @@ describe("Logger Basics", () => {
     const api = logger().lambda(lambdaEvent, lambdaContext, {
       foo: 1,
       bar: 2,
-      context: "conflict"
+      "@context": "conflict"
     });
 
     process.env.LOG_TESTING = "true";
@@ -116,7 +116,7 @@ describe("Logger Basics", () => {
     process.env.LOG_TESTING = "";
 
     expect(response._context).to.equal("conflict");
-    expect(response.context).to.be.an("object");
+    expect(response["@context"]).to.be.an("object");
   });
 
   it("nothing logged when logging level is too low", () => {

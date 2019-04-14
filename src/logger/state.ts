@@ -7,12 +7,12 @@ import { lambda } from "./lambda";
 export interface IAwsLogState {
   correlationId: string;
   severity: LogLevel;
-  context: IAwsLogContext;
+  "@context": IAwsLogContext;
   localContext: IDictionary;
 }
 
 const defaultState: IAwsLogState = {
-  context: { logger: "aws-log" },
+  "@context": { logger: "aws-log" },
   localContext: {},
   correlationId: "",
   severity: undefined
@@ -31,9 +31,9 @@ let rootProperties = () => ({
  * every request and hanging off the "context" property
  */
 export function setContext(ctx: IDictionary) {
-  activeState.context = {
+  activeState["@context"] = {
     ...ctx,
-    ...defaultState.context
+    ...defaultState["@context"]
   };
 
   return loggingApi;
@@ -70,7 +70,7 @@ export const getContext = () => {
     stage:
       process.env.ENVIRONMENT || process.env.STAGE || process.env.AWS_STAGE || "unknown"
   };
-  const context = { ...activeState.context, ...envContext };
+  const context = { ...activeState["@context"], ...envContext };
 
   return context as IAwsLogContext;
 };
