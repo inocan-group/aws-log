@@ -7,9 +7,7 @@ import { setCorrelationId, setContext, setLocalContext } from "./state";
 import { findCorrelationId, createCorrelationId } from "./correlationId";
 import { loggingApi } from "./logging-api";
 
-export type ILambdaEvent<T = IDictionary> =
-  | IAWSLambdaProxyIntegrationRequest
-  | T;
+export type ILambdaEvent<T = IDictionary> = IAWSLambdaProxyIntegrationRequest | T;
 
 export function lambda(
   event: ILambdaEvent,
@@ -20,7 +18,11 @@ export function lambda(
 
   setContext({
     ...ctx,
-    ...{ logger: "aws-log" }
+    ...{
+      logger: "aws-log",
+      awsStage: process.env.AWS_STAGE,
+      awsRegion: process.env.AWS_REGION
+    }
   });
 
   setLocalContext(options);
