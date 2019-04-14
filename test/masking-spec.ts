@@ -9,6 +9,7 @@ const mask = __testAccess__.mask;
 const strategy = __testAccess__.maskStrategies;
 const setMaskedValues = __testAccess__.setMaskedValues;
 const pathBasedMaskingStrategy = __testAccess__.pathBasedMaskingStrategy;
+const maskMessage = __testAccess__.maskMessage;
 
 describe("masking values => ", () => {
   const data1 = {
@@ -77,5 +78,17 @@ describe("masking values => ", () => {
     expect(result.nested.repetitive).to.equal("*".repeat(data1.nested.repetitive.length));
     // not masked
     expect(result.bar).to.equal(data1.bar);
+  });
+
+  it("mask message finds secrets inside of a string", async () => {
+    const secret = "i have a secret";
+    const anotherSecret = "my favorite color is blue";
+    setMaskedValues(secret, anotherSecret);
+    let message = `Hey ho ${secret}. ${anotherSecret}, and that's all folks. ${secret}`;
+    expect(message).to.include(secret);
+    expect(message).to.include(anotherSecret);
+    message = maskMessage(message);
+    expect(message).to.not.include(secret);
+    expect(message).to.not.include(anotherSecret);
   });
 });

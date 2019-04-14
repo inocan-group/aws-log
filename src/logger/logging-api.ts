@@ -118,6 +118,21 @@ function mask<T extends IDictionary = IDictionary>(hash: T) {
   return traverse.map(hash, cb);
 }
 
+/**
+ * **maskMessage**
+ *
+ * looks within the message string for secrets and
+ * removes them.
+ */
+function maskMessage(msg: string) {
+  Array.from(_maskedValues).map(v => {
+    const regEx = new RegExp(v, "g");
+    msg = msg.replace(regEx, "***");
+  });
+
+  return msg;
+}
+
 function applyMask(path: string[], v: string) {
   const dotPath = path.join(".");
   const strategy: IAwsLogMaskingStrategy =
@@ -161,6 +176,7 @@ export function stdout(hash: Partial<IAwsLog> & { "@message": string }) {
   const context = getContext();
   const rootProps = getRootProperties();
   const localContext = getLocalContext();
+  hash = mask(hash);
   const output: IAwsLog = {
     ...(avoidContextCollision({
       ...hash,
@@ -180,7 +196,7 @@ export function stdout(hash: Partial<IAwsLog> & { "@message": string }) {
 export function debug(message: string, params: IDictionary = {}) {
   if (getSeverity() === LogLevel.debug) {
     return stdout({
-      ...{ "@message": message },
+      ...{ "@message": maskMessage(message) },
       ...params
     });
   }
@@ -189,7 +205,7 @@ export function debug(message: string, params: IDictionary = {}) {
 export function info(message: string, params: IDictionary = {}) {
   if (getSeverity() <= LogLevel.info) {
     return stdout({
-      ...{ "@message": message },
+      ...{ "@message": maskMessage(message) },
       ...params
     });
   }
@@ -198,7 +214,7 @@ export function info(message: string, params: IDictionary = {}) {
 export function warn(message: string, params: IDictionary = {}) {
   if (getSeverity() <= LogLevel.warn) {
     return stdout({
-      ...{ "@message": message },
+      ...{ "@message": maskMessage(message) },
       ...params
     });
   }
@@ -212,7 +228,10 @@ export function error(
   const context = getContext();
   if (err) {
     return stdout({
-      ...{ "@message": String(msgOrError) },
+      ...{
+        "@message":
+          typeof msgOrError === "string" ? maskMessage(msgOrError) : String(msgOrError)
+      },
       ...paramsOrErr,
       ...(err as Error)
     });
@@ -229,5 +248,6 @@ export const __testAccess__ = {
   mask,
   maskStrategies,
   setMaskedValues,
-  pathBasedMaskingStrategy
+  pathBasedMaskingStrategy,
+  maskMessage
 };
