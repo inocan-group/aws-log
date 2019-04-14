@@ -8,6 +8,7 @@ import {
   getCorrelationId
 } from "./state";
 import { LogLevel, IAwsLog, IAwsLogWithoutContext, IAwsLogContext } from "../types";
+import traverse, { map as tmap } from "traverse";
 
 export const loggingApi = {
   /** an alias for the "info" level of logging */
@@ -24,11 +25,114 @@ export const loggingApi = {
    * Allows the local context to be appended to
    */
   addToLocalContext,
+  /**
+   * **addToMaskedValues**
+   *
+   * _add_ one (to many) parameters of values which should be
+   * treated as a secret and never displayed in the logs.
+   *
+   * If you need to reset this property use `setMaskedValues()`
+   * instead.
+   */
+  addToMaskedValues,
+  /**
+   * **setMaskedValues**
+   *
+   * _clears_ out the prior value for "maskedValues" and resets
+   * it will whatever is passed in. These values will become the
+   * values which are now "masked" instead of what had been there
+   * before
+   */
+  setMaskedValues,
+  /**
+   * **bespokeMaskingStrategy**
+   *
+   * Allows a particular _path_ (or _paths_) to have a specific
+   * masking strategy
+   *
+   * @param strategy a string value representing the strategy to employ
+   * @param paths  one or more path strings; a "path" should point to the
+   * property which you are aiming to effect and will use the period (`.`) character
+   * to indicate properties within a hash/dictionary
+   */
+  pathBasedMaskingStrategy,
   getContext: () => getContext(),
+  /**
+   * **getCorrelationId**
+   *
+   * Get's the current correlation ID
+   */
   getCorrelationId
 };
 
 export type ILoggerApi = typeof loggingApi;
+export type IAwsLogMaskingStrategy =
+  /** just show astericks and always show length of 5 */
+  | "astericksWidthFixed"
+  /** show only astericks but the number is equavalent to length of value */
+  | "astericksWidthDynamic"
+  /**
+   * show astericks but reveals the real value for last 4 characters
+   * (must be at least 10 characters long or reverts to `astericksWidthFixed`)
+   */
+  | "revealEnd4"
+  /**
+   * show astericks but reveals the real value for the first 4 characters
+   * (must be at least 10 characters long or reverts to `astericksWidthFixed`)
+   */
+  | "revealStart4";
+
+/** values which should not be included in logs regardless of property name */
+let _maskedValues = new Set([]);
+/** properties in the log message which should be masked */
+const _maskedProperties = [];
+const _maskingStrategy: IDictionary<IAwsLogMaskingStrategy> & {
+  default: IAwsLogMaskingStrategy;
+} = {
+  default: "astericksWidthDynamic"
+};
+
+function addToMaskedValues(...props: Array<string>) {
+  _maskedValues = new Set(Array.from(_maskedValues).concat(props));
+}
+
+function pathBasedMaskingStrategy(strategy: IAwsLogMaskingStrategy, ...paths: string[]) {
+  paths.map(path => {
+    _maskingStrategy[path] = strategy;
+  });
+}
+
+function setMaskedValues(...props: Array<string>) {
+  _maskedValues = new Set(props);
+}
+
+/**
+ * Given an input hash/dictionary, this function checks for masked values
+ * and applies the masking strategy to each instance.
+ */
+function mask<T extends IDictionary = IDictionary>(hash: T) {
+  // value-masking strategy
+  const cb = function(v: string) {
+    if (this.isLeaf && _maskedValues.has(v)) this.update(applyMask(this.path, v));
+  };
+  return traverse.map(hash, cb);
+}
+
+function applyMask(path: string[], v: string) {
+  const dotPath = path.join(".");
+  const strategy: IAwsLogMaskingStrategy =
+    _maskingStrategy[dotPath] || _maskingStrategy.default;
+  return maskStrategies[strategy as keyof typeof maskStrategies](v);
+}
+
+const maskStrategies = {
+  astericksWidthFixed: (v: string) => "*".repeat(5),
+  astericksWidthDynamic: (v: string) => "*".repeat(v.length),
+  revealEnd4: (v: string) =>
+    v.length >= 10 ? "*".repeat(v.length - 4) + v.slice(-4) : "*".repeat(5),
+  revealStart4: (v: string) =>
+    v.length >= 10 ? v.slice(0, 4) + "*".repeat(v.length - 4) : "*".repeat(5)
+};
 
 /**
  * If the context object passed in contains a "context" property
@@ -120,3 +224,10 @@ export function addToLocalContext(ctx: IDictionary) {
 
   return loggingApi;
 }
+
+export const __testAccess__ = {
+  mask,
+  maskStrategies,
+  setMaskedValues,
+  pathBasedMaskingStrategy
+};

@@ -54,6 +54,7 @@
     "@types/node": "^8.10.0",
     "@types/rimraf": "^2.0.2",
     "@types/stack-trace": "^0.0.29",
+    "@types/traverse": "^0.6.32",
     "async-shelljs": "^0.1.2",
     "chai": "^4.2.0",
     "chance": "^1.0.16",
@@ -84,6 +85,7 @@
   "dependencies": {
     "common-types": "^1.10.11",
     "stack-trace": "^0.0.10",
+    "traverse": "^0.6.6",
     "wait-in-parallel": "^1.1.4"
   }
 }
