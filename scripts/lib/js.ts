@@ -1,7 +1,6 @@
-// tslint:disable:no-implicit-dependencies
 import chalk from "chalk";
 import { asyncExec } from "async-shelljs";
-import * as rm from "rimraf";
+import rm from "rimraf";
 
 export interface IJSTranspileOptions {
   scope?: string;
