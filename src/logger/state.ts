@@ -1,4 +1,4 @@
-import { LogLevel, IAwsLogContext } from "../types";
+import { LogLevel, IAwsLogContext, IAwsLog, IEnvStage } from "../types";
 import { IDictionary } from "common-types";
 import { logLevelLookup } from "../logger";
 import { loggingApi } from "./logging-api";
@@ -7,33 +7,40 @@ import { lambda } from "./lambda";
 export interface IAwsLogState {
   correlationId: string;
   severity: LogLevel;
-  "@context": IAwsLogContext;
+  stage: IEnvStage;
+  region?: string;
+  context: IAwsLogContext;
   localContext: IDictionary;
 }
 
 const defaultState: IAwsLogState = {
-  "@context": { logger: "aws-log" },
+  context: { logger: "aws-log" },
   localContext: {},
   correlationId: "",
+  stage: (process.env.AWS_STAGE || process.env.NODE_ENV || "unknown") as IEnvStage,
+  region: process.env.AWS_REGION || "unknown",
   severity: undefined
 };
 
 let archivedState: IAwsLogState;
 let activeState: IAwsLogState = { ...defaultState };
 
-let rootProperties = () => ({
-  "@x-correlation-id": activeState.correlationId,
-  "@severity": activeState.severity
-});
+let rootProperties = () =>
+  ({
+    correlationId: activeState.correlationId,
+    severity: activeState.severity,
+    stage: activeState.stage || "unknown",
+    region: activeState.region || "unknown"
+  } as Partial<IAwsLog>);
 
 /**
  * Set the "context" which are properties sent with
  * every request and hanging off the "context" property
  */
 export function setContext(ctx: IDictionary) {
-  activeState["@context"] = {
+  activeState["context"] = {
     ...ctx,
-    ...defaultState["@context"]
+    ...defaultState["context"]
   };
 
   return loggingApi;
@@ -70,7 +77,7 @@ export const getContext = () => {
     stage:
       process.env.ENVIRONMENT || process.env.STAGE || process.env.AWS_STAGE || "unknown"
   };
-  const context = { ...activeState["@context"], ...envContext };
+  const context = { ...activeState["context"], ...envContext };
 
   return context as IAwsLogContext;
 };
@@ -85,6 +92,14 @@ export function getCorrelationId() {
 
 export function setCorrelationId(id: string) {
   activeState.correlationId = id;
+}
+
+export function setStage(stage: IEnvStage) {
+  activeState.stage = stage;
+}
+
+export function getStage() {
+  return activeState.stage;
 }
 
 export function getRootProperties() {
