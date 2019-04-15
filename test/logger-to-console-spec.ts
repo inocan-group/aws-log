@@ -10,9 +10,9 @@ const expect = chai.expect;
 process.env.LOG_LEVEL = "debug";
 process.env.LOG_TESTING = "";
 
-describe.only("logger (to console) => ", () => {
+describe("logger (to console) => ", () => {
   const end = helpers.captureStdout();
-  it("logging context goes to @context, local msg to 'payload'", async () => {
+  it("logging context goes to context, local msg to 'payload'", async () => {
     const ctx = {
       foo: 1,
       bar: 2
@@ -26,7 +26,10 @@ describe.only("logger (to console) => ", () => {
     expect(stdout[0].payload.name)
       .to.be.an("string")
       .and.equal(payload.name);
-    expect(stdout[0]["@context"]).to.be.an("object");
-    expect(stdout[0]["@x-correlation-id"]).to.be.an("string");
+    expect(stdout[0].context).to.be.an("object");
+    expect(stdout[0].correlationId).to.be.an("string");
+    expect(stdout[0].severity).to.be.an("number");
+    expect(stdout[0].stage).to.be.an("string");
+    expect(stdout[0].region).to.be.an("string");
   });
 });

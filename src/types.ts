@@ -2,11 +2,30 @@ import { IDictionary, numberAsString } from "common-types";
 
 export interface IAwsLog extends IDictionary {
   /** a unique ID for a graph/fan of related function executions */
-  "@x-correlation-id": string;
-  "@severity": LogLevel;
+  correlationId: string;
+  /**
+   * **severity**
+   *
+   * the "log-level" represented numerically where:
+   *
+   *   0: debug
+   *   1: info
+   *   2: warn
+   *   3: error
+   *
+   * numeric representation provides a better basis for conditional logic
+   */
+  severity: LogLevel;
+  /** The environmental stage that the function was executing under */
+  stage: IEnvStage;
   /** the text/unstructured description that is passed in as first param of all log levels */
-  "@message": string;
-  "@context": IAwsLogContext;
+  message: string;
+  /** global context information */
+  context?: IAwsLogContext;
+  /** the payload of the structure content from the message */
+  payload?: IDictionary;
+  /** local context set in aws-log */
+  local?: IDictionary;
 }
 
 /**
@@ -26,14 +45,16 @@ export interface IAwsInvocationContext {
 }
 
 export interface IAwsLogWithoutContext extends Partial<IAwsLog> {
-  "@message": string;
+  message: string;
 }
 
+export type IEnvStage = "dev" | "test" | "stage" | "prod" | "unknown";
+
 export enum LogLevel {
-  debug,
-  info,
-  warn,
-  error
+  debug = 0,
+  info = 1,
+  warn = 2,
+  error = 3
 }
 
 export interface IAwsLogContext extends IDictionary {
@@ -68,6 +89,6 @@ export interface IAwsLogContext extends IDictionary {
    * loop to conclude before exiting */
   callbackWaitsForEmptyEventLoop?: boolean;
   memoryLimitInMB?: numberAsString;
-  stage?: "dev" | "prod" | "stage" | "test";
+  awsStage?: "dev" | "prod" | "stage" | "test";
   awsRegion?: string;
 }

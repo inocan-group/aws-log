@@ -154,9 +154,9 @@ const maskStrategies = {
  * move it out of the way so it doesn't collide with
  */
 function avoidContextCollision(options: IDictionary) {
-  if (options["@context"]) {
-    options._context = options["@context"];
-    delete options["@context"];
+  if (options["context"]) {
+    options._context = options["context"];
+    delete options["context"];
   }
 
   return options;
@@ -172,19 +172,18 @@ function avoidContextCollision(options: IDictionary) {
  * @param hash the hash/dictionary coming from one of the logging
  * functions; it should include a "message", optional hash values
  */
-export function stdout(hash: Partial<IAwsLog> & { "@message": string }) {
+export function stdout(hash: Partial<IAwsLog> & { message: string }) {
   const context = getContext();
   const rootProps = getRootProperties();
-  const localContext = getLocalContext();
+  const local = getLocalContext();
   hash = mask(hash);
-  const output: IAwsLog = {
-    ...(avoidContextCollision({
-      ...hash,
-      ...localContext
-    }) as IAwsLogWithoutContext),
+  const output = {
+    message: hash.message,
+    payload: hash.payload,
+    ...{ local },
     ...rootProps,
-    ...{ "@context": context }
-  };
+    ...{ context }
+  } as IAwsLog;
 
   if (process.env.LOG_TESTING) {
     return output;
@@ -196,7 +195,7 @@ export function stdout(hash: Partial<IAwsLog> & { "@message": string }) {
 export function debug(message: string, params: IDictionary = {}) {
   if (getSeverity() === LogLevel.debug) {
     return stdout({
-      ...{ "@message": maskMessage(message) },
+      message: maskMessage(message),
       payload: params
     });
   }
@@ -205,7 +204,7 @@ export function debug(message: string, params: IDictionary = {}) {
 export function info(message: string, params: IDictionary = {}) {
   if (getSeverity() <= LogLevel.info) {
     return stdout({
-      ...{ "@message": maskMessage(message) },
+      message: maskMessage(message),
       payload: params
     });
   }
@@ -214,7 +213,7 @@ export function info(message: string, params: IDictionary = {}) {
 export function warn(message: string, params: IDictionary = {}) {
   if (getSeverity() <= LogLevel.warn) {
     return stdout({
-      ...{ "@message": maskMessage(message) },
+      message: maskMessage(message),
       payload: params
     });
   }
@@ -229,7 +228,7 @@ export function error(
   if (err) {
     return stdout({
       ...{
-        "@message":
+        message:
           typeof msgOrError === "string" ? maskMessage(msgOrError) : String(msgOrError)
       },
       ...paramsOrErr,

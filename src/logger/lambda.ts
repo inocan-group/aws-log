@@ -15,16 +15,7 @@ export function lambda(
   options: IDictionary = {}
 ) {
   setCorrelationId(findCorrelationId(event, ctx) || createCorrelationId());
-
-  setContext({
-    ...ctx,
-    ...{
-      logger: "aws-log",
-      awsStage: process.env.AWS_STAGE,
-      awsRegion: process.env.AWS_REGION
-    }
-  });
-
+  setContext(ctx);
   setLocalContext(options);
 
   return loggingApi;
