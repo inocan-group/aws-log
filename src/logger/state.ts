@@ -6,6 +6,13 @@ import { lambda } from "./lambda";
 
 export interface IAwsLogState {
   correlationId: string;
+  kind:
+    | "backend-function"
+    | "browser-error"
+    | "brower-metrics"
+    | "browser-general"
+    | "performance-test"
+    | "devops";
   severity: LogLevel;
   stage: IEnvStage;
   region?: string;
@@ -15,6 +22,7 @@ export interface IAwsLogState {
 
 const defaultState: IAwsLogState = {
   context: { logger: "aws-log" },
+  kind: "backend-function",
   localContext: {},
   correlationId: "",
   stage: (process.env.AWS_STAGE || process.env.NODE_ENV || "unknown") as IEnvStage,
