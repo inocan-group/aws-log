@@ -197,7 +197,7 @@ export function debug(message: string, params: IDictionary = {}) {
   if (getSeverity() === LogLevel.debug) {
     return stdout({
       ...{ "@message": maskMessage(message) },
-      ...params
+      payload: params
     });
   }
 }
@@ -206,7 +206,7 @@ export function info(message: string, params: IDictionary = {}) {
   if (getSeverity() <= LogLevel.info) {
     return stdout({
       ...{ "@message": maskMessage(message) },
-      ...params
+      payload: params
     });
   }
 }
@@ -215,7 +215,7 @@ export function warn(message: string, params: IDictionary = {}) {
   if (getSeverity() <= LogLevel.warn) {
     return stdout({
       ...{ "@message": maskMessage(message) },
-      ...params
+      payload: params
     });
   }
 }
