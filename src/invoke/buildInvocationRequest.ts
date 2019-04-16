@@ -20,7 +20,7 @@ export function buildInvocationRequest<T extends IDictionary>(
 ) {
   const FunctionName = `arn:aws:lambda:${arn.region}:${arn.account}:function:${
     arn.appName
-  }-${arn.fn}`;
+  }-${arn.stage}-${arn.fn}`;
   const correlationHeaders = {
     "x-correlation-id": getCorrelationId(),
     "x-calling-function": getContext().functionName,
