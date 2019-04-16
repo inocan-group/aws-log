@@ -16,7 +16,8 @@ export async function invoke<T = IDictionary>(
    * ENV variables that will be used to _resolve_ the full ARN include:
    * - AWS_REGION
    * - AWS_ACCOUNT
-   * - AWS_STAGE
+   * - AWS_STAGE (*or NODE_ENV, ENVIRONMENT*)
+   * - SERVICE_NAME (*or APP_NAME*)
    */
   fnArn: string,
   /** the request object to be passed to the calling function */
