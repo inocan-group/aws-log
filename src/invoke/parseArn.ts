@@ -1,5 +1,6 @@
 import { IDictionary } from "common-types";
 import { ensureFunctionName } from "./ensureFunctionName";
+import { getStage } from "../logger/state";
 
 export interface IParsedArn {
   region: string;
@@ -68,7 +69,8 @@ export function getEnvironmentVars() {
     process.env.AWS_STAGE ||
     process.env.ENVIRONMENT ||
     process.env.STAGE ||
-    process.env.NODE_ENV;
+    process.env.NODE_ENV ||
+    getStage();
   const appName = process.env.SERVICE_NAME || process.env.APP_NAME;
 
   return { region, account, stage, appName };
@@ -78,7 +80,7 @@ const patterns: IDictionary<RegExp> = {
   account: /^[0-9]+$/,
   region: /\s+-\s+-[0-9]/,
   stage: /(prod|stage|test|dev)/,
-  appName: /abc/
+  appName: /[\s]+[-\s]*/
 };
 
 function seek(pattern: keyof typeof patterns, partialArn: string) {
@@ -96,7 +98,7 @@ function seek(pattern: keyof typeof patterns, partialArn: string) {
 
 function parsingError(section: keyof typeof patterns) {
   const e = new Error(
-    `Problem finding "${section}" in the partial ARN which was passed in!`
+    `Problem finding "${section}" in the partial ARN which was passed in! To aid in ARN parsing, you should have the following ENV variables set: AWS_STAGE, AWS_ACCOUNT, and SERVICE_NAME`
   );
   e.name = "ArnParsingError";
   throw e;

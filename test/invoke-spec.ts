@@ -5,6 +5,7 @@ import { invoke } from "../src/invoke";
 import { ensureFunctionName } from "../src/invoke/ensureFunctionName";
 import { buildInvocationRequest } from "../src/invoke/buildInvocationRequest";
 import { logger } from "../src/logger";
+import { getStage } from "../src/logger/state";
 
 const expect = chai.expect;
 
@@ -84,7 +85,7 @@ describe("invoke :: ARN Parsing →", () => {
     expect(results.appName).to.equal("test-services");
   });
 
-  it("short ARN without AWS_STAGE errors out", () => {
+  it("short ARN without AWS_STAGE still works because it uses getStage's default", () => {
     const arn = "sentinel";
     process.env.AWS_STAGE = "";
     process.env.AWS_ACCOUNT = "9378553667040";
@@ -92,10 +93,9 @@ describe("invoke :: ARN Parsing →", () => {
     process.env.APP_NAME = "test-services";
     try {
       const results = parseArn(arn);
-      throw new Error("should not have gotten here");
+      expect(results.stage).to.equal(getStage());
     } catch (e) {
-      expect(e.message).to.include("stage");
-      expect(e.name).to.equal("ArnParsingError");
+      throw e;
     }
   });
 
