@@ -48,29 +48,34 @@ function parsePartiallyQualifiedString(fn: string): IParsedArn {
     ...{ fn: ensureFunctionName(fn.split(":").pop()) }
   };
 
-  ["region", "account", "stage", "appName"].forEach(
-    (section: keyof IParsedArn) => {
+  ["region", "account", "stage", "appName"].forEach((section: keyof IParsedArn) => {
+    if (!output[section]) {
+      output[section] = seek(section, fn);
       if (!output[section]) {
-        output[section] = seek(section, fn);
-        if (!output[section]) {
-          parsingError(section);
-        }
+        parsingError(section);
       }
     }
-  );
+  });
 
   return output;
 }
 
 /**
- * Looks for aspects of the ARN in environment variables
+ * **getEnvironmentVars**
+ *
+ * Looks for aspects of the ARN in environment variables. Ideally looking for:
+ *
+ * - AWS_REGION
+ * - AWS_ACCOUNT
+ * - AWS_STAGE (*or NODE_ENV, ENVIRONMENT*)
+ * - SERVICE_NAME (*or APP_NAME*)
  */
 export function getEnvironmentVars() {
-  const region = process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION;
-  const account = process.env.AWS_ACCOUNT;
-  const stage =
-    process.env.ENVIRONMENT || process.env.STAGE || process.env.AWS_STAGE;
-  const appName = process.env.APP_NAME;
+  const region =
+    process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || process.env.REGION;
+  const account = process.env.AWS_ACCOUNT || process.env.AWS_ACCOUNT_ID;
+  const stage = process.env.AWS_STAGE || process.env.ENVIRONMENT || process.env.NODE_ENV;
+  const appName = process.env.SERVICE_NAME || process.env.APP_NAME;
 
   return { region, account, stage, appName };
 }

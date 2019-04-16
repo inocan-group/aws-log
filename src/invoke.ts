@@ -6,6 +6,12 @@ import { buildInvocationRequest } from "./invoke/buildInvocationRequest";
 
 const lambda = new Lambda();
 
+/**
+ * **invoke**
+ *
+ * Invokes another Lambda function while passing the `correlation-id` along
+ * to the next function for logging purposes.
+ */
 export async function invoke<T = IDictionary>(
   /**
    * A reference to the serverless function you are calling; can be a
@@ -16,7 +22,8 @@ export async function invoke<T = IDictionary>(
    * ENV variables that will be used to _resolve_ the full ARN include:
    * - AWS_REGION
    * - AWS_ACCOUNT
-   * - AWS_STAGE
+   * - AWS_STAGE (*or alternatively NODE_ENV, ENVIRONMENT*)
+   * - SERVICE_NAME (*or alternatively APP_NAME*)
    */
   fnArn: string,
   /** the request object to be passed to the calling function */
