@@ -7,10 +7,12 @@ import { lambda } from "./lambda";
 export interface IAwsLogState {
   correlationId: string;
   kind:
-    | "backend-function"
-    | "browser-error"
+    | "lambda"
+    /** this is effectively Lambda metrics */
+    | "report"
+    | "browser-log"
     | "brower-metrics"
-    | "browser-general"
+    | "browser-event"
     | "performance-test"
     | "devops";
   severity: LogLevel;
@@ -22,7 +24,7 @@ export interface IAwsLogState {
 
 const defaultState: IAwsLogState = {
   context: { logger: "aws-log" },
-  kind: "backend-function",
+  kind: "lambda",
   localContext: {},
   correlationId: "",
   stage: (process.env.AWS_STAGE || process.env.NODE_ENV || "unknown") as IEnvStage,
@@ -78,7 +80,7 @@ export function getState() {
   return activeState;
 }
 
-/** comment */
+/** gets the logging context */
 export const getContext = () => {
   const envContext = {
     awsRegion: process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "unknown",

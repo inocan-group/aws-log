@@ -196,6 +196,7 @@ export function debug(message: string, params: IDictionary = {}) {
   if (getSeverity() === LogLevel.debug) {
     return stdout({
       message: maskMessage(message),
+      severity: LogLevel.debug,
       payload: params
     });
   }
@@ -205,6 +206,7 @@ export function info(message: string, params: IDictionary = {}) {
   if (getSeverity() <= LogLevel.info) {
     return stdout({
       message: maskMessage(message),
+      severity: LogLevel.info,
       payload: params
     });
   }
@@ -214,27 +216,60 @@ export function warn(message: string, params: IDictionary = {}) {
   if (getSeverity() <= LogLevel.warn) {
     return stdout({
       message: maskMessage(message),
+      severity: LogLevel.warn,
       payload: params
     });
   }
 }
 
+/**
+ * Newer versions of JS will have the `code` property
+ * on Error but most do not so we are simply extending
+ * the boring old Error class to optionally include it
+ */
+export interface IErrorWithCode extends Error {
+  code?: string;
+}
+
 export function error(
-  msgOrError: string | IDictionary | Error,
-  paramsOrErr?: IDictionary | Error,
-  err?: IDictionary | Error
+  /** either a string message, or an error */
+  msgOrError: string | IErrorWithCode,
+  /** a contextual dictionary or an error */
+  paramsOrErr?: IDictionary | IErrorWithCode,
+  /** an error object */
+  err?: IErrorWithCode
 ) {
   const context = getContext();
-  if (err) {
-    return stdout({
-      ...{
-        message:
-          typeof msgOrError === "string" ? maskMessage(msgOrError) : String(msgOrError)
-      },
-      ...paramsOrErr,
-      ...(err as Error)
-    });
-  }
+  const { message, params, error } = parseErrParameters(msgOrError, paramsOrErr, err);
+
+  return stdout({
+    message,
+    severity: LogLevel.error,
+    isError: true,
+    payload: {
+      params,
+      error
+    }
+  });
+}
+
+function parseErrParameters(
+  msgOrError: string | IDictionary | IErrorWithCode,
+  paramsOrErr?: IDictionary | IErrorWithCode,
+  err?: IErrorWithCode
+) {
+  const isAnError = (thingy: any) => {
+    return typeof thingy === "object" && thingy.message && thingy.name ? true : false;
+  };
+  return isAnError(msgOrError)
+    ? {
+        message: (msgOrError as IErrorWithCode).message as string,
+        params: {},
+        error: msgOrError as IErrorWithCode
+      }
+    : isAnError(paramsOrErr)
+    ? { message: msgOrError as string, params: {}, error: paramsOrErr as IErrorWithCode }
+    : { message: msgOrError as string, params: paramsOrErr as IDictionary, error: err };
 }
 
 export function addToLocalContext(ctx: IDictionary) {

@@ -120,7 +120,7 @@ describe("invoke :: buildInvocationRequest() →", () => {
     process.env.AWS_STAGE = "prod";
     process.env.AWS_ACCOUNT = "9378553667040";
     process.env.AWS_REGION = "us-east-1";
-    process.env.APP_NAME = "test-services";
+    process.env.APP_NAME = "my-services";
     const temp = logger();
 
     const response = buildInvocationRequest(parseArn("myFunc"), { foo: 1, bar: 2 });
@@ -132,7 +132,9 @@ describe("invoke :: buildInvocationRequest() →", () => {
     expect(payload.headers["x-calling-function"]);
 
     expect(response.FunctionName).to.equal(
-      `arn:aws:lambda:us-east-1:9378553667040:function:test-services-myFunc`
+      `arn:aws:lambda:us-east-1:9378553667040:function:${process.env.APP_NAME}-${
+        process.env.AWS_STAGE
+      }-myFunc`
     );
 
     expect(response.LogType).to.equal("None");
