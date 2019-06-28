@@ -240,6 +240,55 @@ the absence of a correlation ID results in one being created automatically. Once
 created though it must be _forwarded_ to all other executions downstream. This is achieved
 via a helper method provided by this library called `invoke`.
 
+## ENV filtering
+
+While in development you almost always want ALL log entries to make it to your logging solution, this is not always the case when your in production (or other environments). For this reason `aws-log` provides a means to configure what logs should  be sent. Options include:
+
+- `all` - all logs of a given log level should be sent to stdout
+- `none` - no logs of a given log level should be sent
+- `sample-by-session` - when initializing a function, a sampling rate is sampled and if within the bounds then all messages of a given log level will be sampled for that session (aka, as long as this logger stays in memory)
+- `sample-by-event` - when an log event is encountered, the sampling rate is sampled and if within the sampling window it is logged.
+
+Filtering based on the environment is set by default based on the value of the `AWS_STAGE` environment variable. The defaults  turn on logging for *all* events in DEV/TEST but block _debug_ logs and only sample logs at the _info_ level in STAGE/PROD. The default sampling rate is 10%.
+
+If you'd like to set your own than you can by passing in the configuration as part of call to `logger( config )`. You can explicitly state the configuration you want or you can just state a "delta" off of the default configuration:
+
+> **Delta Config:** changes sampling rate to 25% when in STAGE/PROD
+
+```typescript
+const config: IAwsLogConfig = { sampleRate: .25 }
+const log = logger(config);
+```
+
+> **Full Config:** explicitly state config; it is assumed that caller has considered the ENV
+
+```typescript
+const config: IAwsLogConfig = { debug: "none", info: "none", warn: "all", error: "all" }
+const log = logger(config);
+```
+
+## Keeping Secrets
+
+Logging is great until you start logging secrets. This is a common problem so `aws-log` has features to help you avoid this:
+
+- `addToMaskedValues(...values: string)` - adds one or more values to the "masked" category
+- `setMaskedValues(...values: string)` - same as `addToMaskedValues` but instead of _adding_ it sets the masked values (removing any previously set values)
+
+Once you've stated the *values* which should be masked you should consider the masking "strategy"; the strategies available are:
+
+- `astericksWidthFixed`
+- `astericksWidthDynamic`
+- `revealEnd4`
+- `revealStart4`
+
+All masked values will default to a single strategy which is by default `astericksWidthDynamic`. You can also override the default strategy by passing in tuple of the form of `[value, strategy]` when setting the value with `addToMaskedValues`/`setMaskedValues`; for example:
+
+```typescript
+const log = logger().mask('abcd', 'efghi', [ 'foobar', "revealEnd4" ])
+```
+
+In this example the first two values will pickup and use the default strategy but the value "foobar" will be masked usin the "revealEnd4" strategy.
+
 ## The `invoke` Function
 
 The standard way of calling a Lambda functon from within a Lambda is through the
@@ -312,7 +361,7 @@ intellisense) but basically this gives you an option to:
 - turn on the "dryrun" feature AWS exposes
 - specify a specific version of the function (rather than the default)
 
-Now if you weren't already sold on why you should be invoking using this more compact API than AWS's provide API, here's the clincher ... using `invoke` ensures that `x-correlation-id` and other contextual parameters are passed along to the next function so that logging in the _next_ function will have the same correlation id (which is actually the _intent_ of a correlation id). 
+Now if you weren't already sold on why you should be invoking using this more compact API than AWS's provide API, here's the clincher ... using `invoke` ensures that `x-correlation-id` and other contextual parameters are passed along to the next function so that logging in the _next_ function will have the same correlation id (which is actually the _intent_ of a correlation id).
 
 > To see what parameters are being pass forward to the next function look at the `IAwsInvocationContext` interface defined in [types.ts](https://github.com/inocan-group/aws-log/blob/master/src/types.ts)
 

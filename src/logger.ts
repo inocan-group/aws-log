@@ -1,7 +1,14 @@
 import { IDictionary } from "common-types";
 import { loggingApi } from "./logger/logging-api";
-import { initSeverity, setCorrelationId, clearState, contextApi } from "./logger/state";
+import {
+  initSeverity,
+  setCorrelationId,
+  clearState,
+  contextApi
+} from "./logger/state";
 import { createCorrelationId } from "./logger/correlationId";
+import { IAwsLogConfig } from "./types";
+import { sessionSample } from "./shared/sessionSample";
 export { setSeverity, setContext, getState } from "./logger/state";
 
 export const logLevelLookup: IDictionary<number> = {
@@ -11,7 +18,42 @@ export const logLevelLookup: IDictionary<number> = {
   ERROR: 3
 };
 
-export function logger() {
+export let config: IAwsLogConfig;
+const defaultConfigs: IDictionary<IAwsLogConfig> = {
+  dev: {
+    debug: "all",
+    info: "all",
+    warn: "all",
+    error: "all"
+  },
+  test: {
+    debug: "all",
+    info: "all",
+    warn: "all",
+    error: "all"
+  },
+  stage: {
+    debug: "none",
+    info: "sample-by-session",
+    warn: "all",
+    error: "all"
+  },
+  prod: {
+    debug: "none",
+    info: "sample-by-session",
+    warn: "all",
+    error: "all"
+  }
+};
+
+export function logger(requestedConfig?: IAwsLogConfig) {
+  const environment = process.env.AWS_STAGE || "dev";
+  const defaultConfig = defaultConfigs[environment];
+  if (requestedConfig) {
+    config = sessionSample({ ...defaultConfig, ...requestedConfig });
+  } else {
+    config = defaultConfig;
+  }
   clearState();
   initSeverity();
   setCorrelationId(createCorrelationId());

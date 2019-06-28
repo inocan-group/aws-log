@@ -31,7 +31,9 @@ async function mochaTests(stg: string, searchTerms: string[]) {
   const scripts = await findScripts(searchTerms);
   process.env.AWS_STAGE = stg;
   process.env.TS_NODE_COMPILER_OPTIONS = '{ "noImplicitAny": false }';
-  await asyncExec(`mocha --require ts-node/register --exit ` + scripts.join(" "));
+  await asyncExec(
+    `mocha --require ts-node/register --exit ` + scripts.join(" ")
+  );
 }
 
 (async () => {
@@ -43,7 +45,9 @@ async function mochaTests(stg: string, searchTerms: string[]) {
       .map(o => o.replace(/^-/, ""))
   );
   const stage = options.has("dev") ? "dev" : "test";
-  const availableScripts = await find("./test").filter(f => f.match(/-spec\.ts/));
+  const availableScripts = await find("./test").filter(f =>
+    f.match(/-spec\.ts/)
+  );
 
   const scriptsToTest =
     searchTerms.length > 0
@@ -53,7 +57,9 @@ async function mochaTests(stg: string, searchTerms: string[]) {
       : availableScripts;
 
   if (options.has("-ls") || options.has("-l") || options.has("list")) {
-    console.log(chalk.yellow("- 🤓  The following test scripts are available:"));
+    console.log(
+      chalk.yellow("- 🤓  The following test scripts are available:")
+    );
     console.log("    - " + scriptNames(availableScripts).join("\n    - "));
 
     return;
@@ -61,29 +67,31 @@ async function mochaTests(stg: string, searchTerms: string[]) {
 
   console.log(
     chalk.yellow(
-      `- 🕐  Starting testing ${stage !== "test" ? "[ stage:  " + stage + " ]" : ""}`
+      `- 🕐  Starting testing ${
+        stage !== "test" ? "[ stage:  " + stage + " ]" : ""
+      }`
     )
   );
 
-  try {
-    await lintSource();
-    console.log(chalk.green(`- 👍  Linting found no problems  `));
-  } catch (e) {
-    if (!options.has("--ignoreLint")) {
-      console.log(
-        chalk.red.bold(
-          `- 😖 Error with linting! ${chalk.white.dim(
-            "you can disable this by adding --ignoreLint flag\n"
-          )}`
-        )
-      );
-      process.exit(1);
-    } else {
-      console.log(
-        `- 🦄  continuing onto mocha tests because of ${chalk.bold("--ignoreLint")} flag`
-      );
-    }
-  }
+  // try {
+  //   await lintSource();
+  //   console.log(chalk.green(`- 👍  Linting found no problems  `));
+  // } catch (e) {
+  //   if (!options.has("--ignoreLint")) {
+  //     console.log(
+  //       chalk.red.bold(
+  //         `- 😖 Error with linting! ${chalk.white.dim(
+  //           "you can disable this by adding --ignoreLint flag\n"
+  //         )}`
+  //       )
+  //     );
+  //     process.exit(1);
+  //   } else {
+  //     console.log(
+  //       `- 🦄  continuing onto mocha tests because of ${chalk.bold("--ignoreLint")} flag`
+  //     );
+  //   }
+  // }
 
   if (availableScripts.length === scriptsToTest.length) {
     console.log(

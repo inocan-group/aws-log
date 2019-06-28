@@ -7,8 +7,10 @@ import {
   addToLocalContext as addLocalContext,
   getCorrelationId
 } from "./state";
-import { LogLevel, IAwsLog, IAwsLogWithoutContext, IAwsLogContext } from "../types";
+import { LogLevel, IAwsLog, IAwsLogConfig } from "../types";
 import traverse, { map as tmap } from "traverse";
+import { config } from "../logger";
+import { sample } from "../shared/sample";
 
 export const loggingApi = {
   /** an alias for the "info" level of logging */
@@ -69,7 +71,7 @@ export type ILoggerApi = typeof loggingApi;
 export type IAwsLogMaskingStrategy =
   /** just show astericks and always show length of 5 */
   | "astericksWidthFixed"
-  /** show only astericks but the number is equavalent to length of value */
+  /** show only astericks but the number is equavalent to length of value with a max length of 15 */
   | "astericksWidthDynamic"
   /**
    * show astericks but reveals the real value for last 4 characters
@@ -82,38 +84,69 @@ export type IAwsLogMaskingStrategy =
    */
   | "revealStart4";
 
-/** values which should not be included in logs regardless of property name */
+/** values which should always be masked */
 let _maskedValues = new Set([]);
 /** properties in the log message which should be masked */
 const _maskedProperties = [];
-const _maskingStrategy: IDictionary<IAwsLogMaskingStrategy> & {
+
+/**
+ * A dictionary where the _keys_ are masked-values and _values_ are strategies
+ */
+let _maskingStrategy: IDictionary<IAwsLogMaskingStrategy> & {
   default: IAwsLogMaskingStrategy;
 } = {
   default: "astericksWidthDynamic"
 };
 
-function addToMaskedValues(...props: Array<string>) {
-  _maskedValues = new Set(Array.from(_maskedValues).concat(props));
+function addToMaskedValues(
+  ...props: Array<string | [string, IAwsLogMaskingStrategy]>
+) {
+  const values = props.map(i => {
+    if (Array.isArray(i)) {
+      const [value, strategy] = i;
+      setStrategyForValue(value, strategy);
+      return value;
+    } else {
+      return i;
+    }
+  });
+  _maskedValues = new Set(Array.from(_maskedValues).concat(values));
+  return loggingApi;
 }
 
-function pathBasedMaskingStrategy(strategy: IAwsLogMaskingStrategy, ...paths: string[]) {
+function setStrategyForValue(value: string, strategy: IAwsLogMaskingStrategy) {
+  _maskingStrategy[value] = strategy;
+}
+
+function pathBasedMaskingStrategy(
+  strategy: IAwsLogMaskingStrategy,
+  ...paths: string[]
+) {
   paths.map(path => {
     _maskingStrategy[path] = strategy;
   });
 }
 
-function setMaskedValues(...props: Array<string>) {
-  _maskedValues = new Set(props);
+function setMaskedValues(
+  ...props: Array<string | [string, IAwsLogMaskingStrategy]>
+) {
+  _maskedValues = new Set();
+  _maskingStrategy = { default: "astericksWidthDynamic" };
+  addToMaskedValues(...props);
+  return loggingApi;
 }
 
 /**
+ * **mask**
+ *
  * Given an input hash/dictionary, this function checks for masked values
  * and applies the masking strategy to each instance.
  */
 function mask<T extends IDictionary = IDictionary>(hash: T) {
   // value-masking strategy
   const cb = function(v: string) {
-    if (this.isLeaf && _maskedValues.has(v)) this.update(applyMask(this.path, v));
+    if (this.isLeaf && _maskedValues.has(v))
+      this.update(applyMask(this.path, v));
   };
   return traverse.map(hash, cb);
 }
@@ -127,7 +160,9 @@ function mask<T extends IDictionary = IDictionary>(hash: T) {
 function maskMessage(msg: string) {
   Array.from(_maskedValues).map(v => {
     const regEx = new RegExp(v, "g");
-    msg = msg.replace(regEx, "***");
+    const strategy = _maskingStrategy[v] || _maskingStrategy.default;
+
+    msg = msg.replace(regEx, maskStrategies[strategy](v));
   });
 
   return msg;
@@ -136,31 +171,21 @@ function maskMessage(msg: string) {
 function applyMask(path: string[], v: string) {
   const dotPath = path.join(".");
   const strategy: IAwsLogMaskingStrategy =
-    _maskingStrategy[dotPath] || _maskingStrategy.default;
-  return maskStrategies[strategy as keyof typeof maskStrategies](v);
+    _maskingStrategy[v] ||
+    _maskingStrategy[dotPath] ||
+    _maskingStrategy.default;
+
+  return maskStrategies[strategy](v);
 }
 
 const maskStrategies = {
   astericksWidthFixed: (v: string) => "*".repeat(5),
-  astericksWidthDynamic: (v: string) => "*".repeat(v.length),
+  astericksWidthDynamic: (v: string) => "*".repeat(Math.min(v.length, 15)),
   revealEnd4: (v: string) =>
-    v.length >= 10 ? "*".repeat(v.length - 4) + v.slice(-4) : "*".repeat(5),
+    v.length >= 5 ? "*".repeat(v.length - 4) + v.slice(-4) : "*".repeat(5),
   revealStart4: (v: string) =>
-    v.length >= 10 ? v.slice(0, 4) + "*".repeat(v.length - 4) : "*".repeat(5)
+    v.length >= 5 ? v.slice(0, 4) + "*".repeat(v.length - 4) : "*".repeat(5)
 };
-
-/**
- * If the context object passed in contains a "context" property
- * move it out of the way so it doesn't collide with
- */
-function avoidContextCollision(options: IDictionary) {
-  if (options["context"]) {
-    options._context = options["context"];
-    delete options["context"];
-  }
-
-  return options;
-}
 
 /**
  * stdout
@@ -177,6 +202,7 @@ export function stdout(hash: Partial<IAwsLog> & { message: string }) {
   const rootProps = getRootProperties();
   const local = getLocalContext();
   hash = mask(hash);
+
   const output = {
     message: hash.message,
     payload: hash.payload,
@@ -193,7 +219,12 @@ export function stdout(hash: Partial<IAwsLog> & { message: string }) {
 }
 
 export function debug(message: string, params: IDictionary = {}) {
-  if (getSeverity() === LogLevel.debug) {
+  const status: "all" | "none" =
+    config.debug === "sample-by-event"
+      ? sample(config.sampleRate)
+      : (config.debug as "all" | "none");
+
+  if (status === "all") {
     return stdout({
       message: maskMessage(message),
       severity: LogLevel.debug,
@@ -203,7 +234,12 @@ export function debug(message: string, params: IDictionary = {}) {
 }
 
 export function info(message: string, params: IDictionary = {}) {
-  if (getSeverity() <= LogLevel.info) {
+  const status: "all" | "none" =
+    config.debug === "sample-by-event"
+      ? sample(config.sampleRate)
+      : (config.debug as "all" | "none");
+
+  if (status === "all") {
     return stdout({
       message: maskMessage(message),
       severity: LogLevel.info,
@@ -213,7 +249,12 @@ export function info(message: string, params: IDictionary = {}) {
 }
 
 export function warn(message: string, params: IDictionary = {}) {
-  if (getSeverity() <= LogLevel.warn) {
+  const status: "all" | "none" =
+    config.debug === "sample-by-event"
+      ? sample(config.sampleRate)
+      : (config.debug as "all" | "none");
+
+  if (status === "all") {
     return stdout({
       message: maskMessage(message),
       severity: LogLevel.warn,
@@ -239,18 +280,29 @@ export function error(
   /** an error object */
   err?: IErrorWithCode
 ) {
-  const context = getContext();
-  const { message, params, error } = parseErrParameters(msgOrError, paramsOrErr, err);
+  const status =
+    config.debug === "sample-by-event"
+      ? sample(config.sampleRate)
+      : config.debug;
 
-  return stdout({
-    message,
-    severity: LogLevel.error,
-    isError: true,
-    payload: {
-      params,
-      error
-    }
-  });
+  const context = getContext();
+  const { message, params, error } = parseErrParameters(
+    msgOrError,
+    paramsOrErr,
+    err
+  );
+
+  if (status === "all") {
+    return stdout({
+      message,
+      severity: LogLevel.error,
+      isError: true,
+      payload: {
+        params,
+        error
+      }
+    });
+  }
 }
 
 function parseErrParameters(
@@ -259,7 +311,9 @@ function parseErrParameters(
   err?: IErrorWithCode
 ) {
   const isAnError = (thingy: any) => {
-    return typeof thingy === "object" && thingy.message && thingy.name ? true : false;
+    return typeof thingy === "object" && thingy.message && thingy.name
+      ? true
+      : false;
   };
   return isAnError(msgOrError)
     ? {
@@ -268,8 +322,16 @@ function parseErrParameters(
         error: msgOrError as IErrorWithCode
       }
     : isAnError(paramsOrErr)
-    ? { message: msgOrError as string, params: {}, error: paramsOrErr as IErrorWithCode }
-    : { message: msgOrError as string, params: paramsOrErr as IDictionary, error: err };
+    ? {
+        message: msgOrError as string,
+        params: {},
+        error: paramsOrErr as IErrorWithCode
+      }
+    : {
+        message: msgOrError as string,
+        params: paramsOrErr as IDictionary,
+        error: err
+      };
 }
 
 export function addToLocalContext(ctx: IDictionary) {

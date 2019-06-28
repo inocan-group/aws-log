@@ -28,7 +28,9 @@ describe("masking values => ", () => {
     expect(strategy.astericksWidthDynamic("12345678")).to.equal("*".repeat(8));
     expect(strategy.astericksWidthFixed("12345678")).to.equal("*".repeat(5));
     expect(strategy.revealEnd4("12345678ab")).to.equal("*".repeat(6) + "78ab");
-    expect(strategy.revealStart4("12345678ab")).to.equal("1234" + "*".repeat(6));
+    expect(strategy.revealStart4("12345678ab")).to.equal(
+      "1234" + "*".repeat(6)
+    );
   });
 
   it("mask function works with root values set to be masked", async () => {
@@ -59,7 +61,9 @@ describe("masking values => ", () => {
     const result = mask(data1);
     // masked
     expect(result.baz).to.equal("*".repeat(data1.baz.length));
-    expect(result.nested.repetitive).to.equal("*".repeat(data1.nested.repetitive.length));
+    expect(result.nested.repetitive).to.equal(
+      "*".repeat(data1.nested.repetitive.length)
+    );
     expect(result.baz).to.equal(result.nested.repetitive);
     // not masked
     expect(result.foo).to.equal(data1.foo);
@@ -72,10 +76,14 @@ describe("masking values => ", () => {
 
     const result = mask(data1);
     // bespoke masked
-    expect(result.baz).to.equal("*".repeat(data1.baz.length - 4) + result.baz.slice(-4));
+    expect(result.baz).to.equal(
+      "*".repeat(data1.baz.length - 4) + result.baz.slice(-4)
+    );
     // default masked
     expect(result.foo).to.equal("*".repeat(data1.foo.length));
-    expect(result.nested.repetitive).to.equal("*".repeat(data1.nested.repetitive.length));
+    expect(result.nested.repetitive).to.equal(
+      "*".repeat(data1.nested.repetitive.length)
+    );
     // not masked
     expect(result.bar).to.equal(data1.bar);
   });
@@ -90,5 +98,29 @@ describe("masking values => ", () => {
     message = maskMessage(message);
     expect(message).to.not.include(secret);
     expect(message).to.not.include(anotherSecret);
+  });
+
+  it.only("mask values can state a non-default strategy using tuples", () => {
+    const log = logger().setMaskedValues("boo", "barrymore", [
+      "foobar",
+      "revealEnd4"
+    ]);
+    // ensure results are return rather than set to STDOUT
+    process.env.LOG_TESTING = "true";
+
+    const outcome = log.info(
+      `This is a mask test where "boo" and "barrymore" should be masked but so should "foobar"`,
+      { foobar: "foobar" }
+    );
+
+    expect(outcome.message).to.not.include("boo");
+    expect(outcome.message).to.include('"***"');
+
+    expect(outcome.message).to.not.include("barrymore");
+    expect(outcome.message).to.include('"*********"');
+
+    expect(outcome.message).to.not.include("foobar");
+    expect(outcome.payload.foobar).to.equal("**obar");
+    expect(outcome.message).to.include("**obar");
   });
 });

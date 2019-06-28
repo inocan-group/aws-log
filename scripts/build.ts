@@ -26,23 +26,6 @@ function prepOutput(output: string) {
     console.error(chalk.red("- Problem transpiling Javascript!"), e);
     process.exit(1);
   }
-  try {
-    console.log(chalk.yellow.bold("- Starting configuration of serverless.yml"));
-    await serverless("plugins", `serverless ${chalk.bold("Plugins")}`);
-    await serverless("functions", `serverless ${chalk.bold("Function(s)")}`, {
-      required: true
-    });
-    await serverless("stepFunctions", `serverless ${chalk.bold("Step Function(s)")}`);
-    await serverless("provider", `serverless ${chalk.bold("Provider")} definition`, {
-      singular: true
-    });
-    // await serverless("package", `serverless ${chalk.bold("Package")} definition`, {
-    //   singular: true
-    // });
-    console.log(chalk.green.bold("- serverless.yml file is fully configured 👍\n"));
-  } catch (e) {
-    console.log(chalk.red("- Problem with building serverless.yml file\n"), e + "\n");
-    process.exit(1);
-  }
+
   console.log("\n");
 })();

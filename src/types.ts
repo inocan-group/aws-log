@@ -1,5 +1,34 @@
 import { IDictionary, numberAsString } from "common-types";
 
+export type IAwsLogLevel =
+  | "none"
+  | "all"
+  /**
+   * sampling rate is evaluated once when this session is started
+   * and then remains either on or off. This sampling has the benefit
+   * that when the sampling is _on_ it is on for the whole function execution
+   * (although NOT cross function).
+   */
+  | "sample-by-session"
+  /**
+   * the sampling rate is queried for each log entry/event
+   */
+  | "sample-by-event";
+
+export interface IAwsLogConfig {
+  debug: IAwsLogLevel;
+  info: IAwsLogLevel;
+  warn: IAwsLogLevel;
+  error: IAwsLogLevel;
+  /**
+   * If you are using sampling for any of the log levels
+   * then you must indicate the percentage of log events
+   * which will be passed through to AWS CloudWatch. By
+   * default the sample rate will be set to 0.1 (aka, 10%)
+   */
+  sampleRate?: number;
+}
+
 export interface IAwsLog extends IDictionary {
   /** a unique ID for a graph/fan of related function executions */
   correlationId: string;
@@ -48,7 +77,7 @@ export interface IAwsLogWithoutContext extends Partial<IAwsLog> {
   message: string;
 }
 
-export type IEnvStage = "dev" | "test" | "stage" | "prod" | "unknown";
+export type IEnvStage = "dev" | "test" | "stage" | "prod" | "unknown" | "all";
 
 export enum LogLevel {
   debug = 0,
