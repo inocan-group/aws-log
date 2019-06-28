@@ -100,7 +100,7 @@ describe("masking values => ", () => {
     expect(message).to.not.include(anotherSecret);
   });
 
-  it.only("mask values can state a non-default strategy using tuples", () => {
+  it("mask values can state a non-default strategy using tuples", () => {
     const log = logger().setMaskedValues("boo", "barrymore", [
       "foobar",
       "revealEnd4"

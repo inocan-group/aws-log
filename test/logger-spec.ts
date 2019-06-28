@@ -20,7 +20,8 @@ const lambdaEvent: IDictionary = {
 const lambdaContext: IAWSLambaContext = {
   functionName: "foobar",
   functionVersion: "1.0",
-  invokedFunctionArn: "arn:aws:lambda:us-east-1:845955389040:function:abc-prod-fn",
+  invokedFunctionArn:
+    "arn:aws:lambda:us-east-1:845955389040:function:abc-prod-fn",
   memoryLimitInMB: "512",
   awsRequestId: "rid1234",
   logGroupName: "log-group",
@@ -81,7 +82,9 @@ describe("Logger Basics", () => {
     expect(config.context).to.be.an("object");
     expect(config.context.functionName).to.equal(lambdaContext.functionName);
     expect(config.context.logStreamName).to.equal(lambdaContext.logStreamName);
-    expect(config.correlationId).is.equal(lambdaEvent.headers["@x-correlation-id"]);
+    expect(config.correlationId).is.equal(
+      lambdaEvent.headers["@x-correlation-id"]
+    );
   });
 
   it("Initialization with lambda(), using additional context works as expected", () => {
@@ -97,44 +100,26 @@ describe("Logger Basics", () => {
     expect(config.localContext.foo).to.equal(1);
     expect(config.localContext.bar).to.equal(2);
     expect(config.localContext.context).to.equal("conflict"); // will become a conflict when logged
-    expect(config.correlationId).is.equal(lambdaEvent.headers["@x-correlation-id"]);
-  });
-
-  it('no conflict with "context" property when moved to local', () => {
-    process.env.LOG_LEVEL = String(LogLevel.info);
-    const api = logger().lambda(lambdaEvent, lambdaContext, {
-      foo: 1,
-      bar: 2,
-      context: "conflict"
-    });
-
-    process.env.LOG_TESTING = "true";
-    const response: IAwsLog = api.log("this is a test", {
-      foo: 1,
-      bar: 2
-    });
-    process.env.LOG_TESTING = "";
-
-    expect(response.local.context).to.equal("conflict");
-    expect(response.context).to.be.an("object");
+    expect(config.correlationId).is.equal(
+      lambdaEvent.headers["@x-correlation-id"]
+    );
   });
 
   it("nothing logged when logging level is too low", () => {
     process.env.LOG_TESTING = "true";
-    process.env.LOG_LEVEL = String(LogLevel.info);
-    let { debug, info, warn, error } = logger();
+    let { debug, info, warn, error } = logger({
+      debug: "none",
+      info: "none",
+      warn: "all",
+      error: "all"
+    });
     expect(debug("testing")).to.equal(undefined);
-    expect(info("testing"))
-      .to.not.equal(undefined)
-      .and.to.be.a("string");
+    expect(info("testing")).to.equal(undefined);
     expect(warn("testing"))
       .to.not.equal(undefined)
       .and.to.be.a("string");
 
-    setSeverity(LogLevel.warn);
-    expect(debug("testing")).to.equal(undefined);
-    expect(info("testing")).to.equal(undefined);
-    expect(warn("testing"))
+    expect(error("testing"))
       .to.not.equal(undefined)
       .and.to.be.a("string");
 

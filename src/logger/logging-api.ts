@@ -180,7 +180,7 @@ function applyMask(path: string[], v: string) {
 
 const maskStrategies = {
   astericksWidthFixed: (v: string) => "*".repeat(5),
-  astericksWidthDynamic: (v: string) => "*".repeat(Math.min(v.length, 15)),
+  astericksWidthDynamic: (v: string) => "*".repeat(Math.min(v.length, 25)),
   revealEnd4: (v: string) =>
     v.length >= 5 ? "*".repeat(v.length - 4) + v.slice(-4) : "*".repeat(5),
   revealStart4: (v: string) =>
@@ -235,9 +235,9 @@ export function debug(message: string, params: IDictionary = {}) {
 
 export function info(message: string, params: IDictionary = {}) {
   const status: "all" | "none" =
-    config.debug === "sample-by-event"
+    config.info === "sample-by-event"
       ? sample(config.sampleRate)
-      : (config.debug as "all" | "none");
+      : (config.info as "all" | "none");
 
   if (status === "all") {
     return stdout({
@@ -250,9 +250,9 @@ export function info(message: string, params: IDictionary = {}) {
 
 export function warn(message: string, params: IDictionary = {}) {
   const status: "all" | "none" =
-    config.debug === "sample-by-event"
+    config.warn === "sample-by-event"
       ? sample(config.sampleRate)
-      : (config.debug as "all" | "none");
+      : (config.warn as "all" | "none");
 
   if (status === "all") {
     return stdout({
@@ -281,9 +281,9 @@ export function error(
   err?: IErrorWithCode
 ) {
   const status =
-    config.debug === "sample-by-event"
+    config.error === "sample-by-event"
       ? sample(config.sampleRate)
-      : config.debug;
+      : config.error;
 
   const context = getContext();
   const { message, params, error } = parseErrParameters(
