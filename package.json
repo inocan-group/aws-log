@@ -21,7 +21,7 @@
   "scripts": {
     "clean": "rimraf lib",
     "lint": "tslint --force --format verbose \"src/**/*.ts\"",
-    "build": "tsc && tsc -P tsconfig.es.json",
+    "build": "rimraf lib && tsc && tsc -P tsconfig.es.json",
     "deps": "./node_modules/.bin/ts-node ./scripts/deps.ts",
     "deps:reset": "./node_modules/.bin/ts-node ./scripts/reset.ts",
     "set-secret": "./node_modules/.bin/ts-node ./scripts/set-secret.ts --profile move",
