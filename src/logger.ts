@@ -46,7 +46,7 @@ const defaultConfigs: IDictionary<IAwsLogConfig> = {
   }
 };
 
-export function logger(requestedConfig?: IAwsLogConfig) {
+export function logger(requestedConfig?: Partial<IAwsLogConfig>) {
   const environment = process.env.AWS_STAGE || "dev";
   const defaultConfig = defaultConfigs[environment];
   if (requestedConfig) {

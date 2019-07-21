@@ -3,6 +3,7 @@ import { IDictionary } from "common-types";
 import { logLevelLookup } from "../logger";
 import { loggingApi } from "./logging-api";
 import { lambda } from "./lambda";
+import { sample } from "../shared/sample";
 
 export interface IAwsLogState {
   correlationId: string;
@@ -27,7 +28,9 @@ const defaultState: IAwsLogState = {
   kind: "lambda",
   localContext: {},
   correlationId: "",
-  stage: (process.env.AWS_STAGE || process.env.NODE_ENV || "unknown") as IEnvStage,
+  stage: (process.env.AWS_STAGE ||
+    process.env.NODE_ENV ||
+    "unknown") as IEnvStage,
   region: process.env.AWS_REGION || "unknown",
   severity: undefined
 };
@@ -38,7 +41,6 @@ let activeState: IAwsLogState = { ...defaultState };
 let rootProperties = () =>
   ({
     correlationId: activeState.correlationId,
-    severity: activeState.severity,
     stage: activeState.stage || "unknown",
     region: activeState.region || "unknown"
   } as Partial<IAwsLog>);
@@ -83,9 +85,13 @@ export function getState() {
 /** gets the logging context */
 export const getContext = () => {
   const envContext = {
-    awsRegion: process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "unknown",
+    awsRegion:
+      process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "unknown",
     stage:
-      process.env.ENVIRONMENT || process.env.STAGE || process.env.AWS_STAGE || "unknown"
+      process.env.ENVIRONMENT ||
+      process.env.STAGE ||
+      process.env.AWS_STAGE ||
+      "unknown"
   };
   const context = { ...activeState["context"], ...envContext };
 
@@ -119,6 +125,7 @@ export function getRootProperties() {
 export function clearState() {
   archiveState(activeState);
   activeState = { ...defaultState };
+  _sessionSampling = undefined;
 }
 
 export function restoreState() {
@@ -135,7 +142,9 @@ export function initSeverity() {
     return;
   }
 
-  setSeverity(!Number.isNaN(Number(s)) ? Number(s) : logLevelLookup[s.toUpperCase()]);
+  setSeverity(
+    !Number.isNaN(Number(s)) ? Number(s) : logLevelLookup[s.toUpperCase()]
+  );
 }
 
 export function setSeverity(s: LogLevel) {
@@ -158,3 +167,12 @@ export const contextApi = {
   /** allow for reloading context to last known point */
   reloadContext: restoreState
 };
+
+let _sessionSampling: "all" | "none";
+
+export function getSessionSampling() {
+  if (!_sessionSampling) {
+    _sessionSampling = sample();
+  }
+  return _sessionSampling;
+}

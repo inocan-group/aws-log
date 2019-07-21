@@ -101,12 +101,11 @@ describe("masking values => ", () => {
   });
 
   it("mask values can state a non-default strategy using tuples", () => {
+    process.env.AWS_STAGE = "dev";
     const log = logger().setMaskedValues("boo", "barrymore", [
       "foobar",
       "revealEnd4"
     ]);
-    // ensure results are return rather than set to STDOUT
-    process.env.LOG_TESTING = "true";
 
     const outcome = log.info(
       `This is a mask test where "boo" and "barrymore" should be masked but so should "foobar"`,
