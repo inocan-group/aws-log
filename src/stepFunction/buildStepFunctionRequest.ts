@@ -1,7 +1,6 @@
 import { IDictionary } from "common-types";
 import { IParsedArn } from "./parseStepArn";
 import { getCorrelationId, getContext } from "../logger/state";
-import { StepFunctions } from "aws-sdk";
 
 /**
  * buildRequest
@@ -42,12 +41,12 @@ export function buildStepFunctionRequest(
   }
 
   // if(!name) {
-  //   name = 
+  //   name =
   // }
 
   return {
     stateMachineArn,
     input,
     name
-  } as StepFunctions.StartExecutionInput;
+  } as import("aws-sdk").StepFunctions.StartExecutionInput;
 }
