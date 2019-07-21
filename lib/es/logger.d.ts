@@ -1,0 +1,48 @@
+import { IDictionary } from "common-types";
+import { IAwsLogConfig } from "./types";
+export { setSeverity, setContext, getState } from "./logger/state";
+export declare const logLevelLookup: IDictionary<number>;
+export declare let config: IAwsLogConfig;
+export declare function logger(requestedConfig?: Partial<IAwsLogConfig>): {
+    context: typeof import("./logger/state").setContext;
+    lambda: typeof import("./logger/lambda").lambda;
+    reloadContext: typeof import("./logger/state").restoreState;
+    log: typeof import("./logger/logging-api").info;
+    debug: typeof import("./logger/logging-api").debug;
+    info: typeof import("./logger/logging-api").info;
+    warn: typeof import("./logger/logging-api").warn;
+    error: typeof import("./logger/logging-api").error;
+    addToLocalContext: typeof import("./logger/logging-api").addToLocalContext;
+    addToMaskedValues: (...props: (string | [string, import("./logger/logging-api").IAwsLogMaskingStrategy])[]) => {
+        log: typeof import("./logger/logging-api").info;
+        debug: typeof import("./logger/logging-api").debug;
+        info: typeof import("./logger/logging-api").info;
+        warn: typeof import("./logger/logging-api").warn;
+        error: typeof import("./logger/logging-api").error;
+        addToLocalContext: typeof import("./logger/logging-api").addToLocalContext;
+        addToMaskedValues: any;
+        setMaskedValues: (...props: (string | [string, import("./logger/logging-api").IAwsLogMaskingStrategy])[]) => any;
+        pathBasedMaskingStrategy: (strategy: import("./logger/logging-api").IAwsLogMaskingStrategy, ...paths: string[]) => void;
+        setStrategyForValue: (value: string, strategy: import("./logger/logging-api").IAwsLogMaskingStrategy) => void;
+        getContext: () => import("./types").IAwsLogContext;
+        getCorrelationId: typeof import("./logger/state").getCorrelationId;
+    };
+    setMaskedValues: (...props: (string | [string, import("./logger/logging-api").IAwsLogMaskingStrategy])[]) => {
+        log: typeof import("./logger/logging-api").info;
+        debug: typeof import("./logger/logging-api").debug;
+        info: typeof import("./logger/logging-api").info;
+        warn: typeof import("./logger/logging-api").warn;
+        error: typeof import("./logger/logging-api").error;
+        addToLocalContext: typeof import("./logger/logging-api").addToLocalContext;
+        addToMaskedValues: (...props: (string | [string, import("./logger/logging-api").IAwsLogMaskingStrategy])[]) => any;
+        setMaskedValues: any;
+        pathBasedMaskingStrategy: (strategy: import("./logger/logging-api").IAwsLogMaskingStrategy, ...paths: string[]) => void;
+        setStrategyForValue: (value: string, strategy: import("./logger/logging-api").IAwsLogMaskingStrategy) => void;
+        getContext: () => import("./types").IAwsLogContext;
+        getCorrelationId: typeof import("./logger/state").getCorrelationId;
+    };
+    pathBasedMaskingStrategy: (strategy: import("./logger/logging-api").IAwsLogMaskingStrategy, ...paths: string[]) => void;
+    setStrategyForValue: (value: string, strategy: import("./logger/logging-api").IAwsLogMaskingStrategy) => void;
+    getContext: () => import("./types").IAwsLogContext;
+    getCorrelationId: typeof import("./logger/state").getCorrelationId;
+};

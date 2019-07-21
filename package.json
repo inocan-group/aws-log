@@ -15,12 +15,13 @@
   "files": [
     "lib"
   ],
-  "main": "lib/index.js",
+  "main": "lib/cjs/index.js",
+  "module": "lib/es/index.js",
   "typings": "lib/index.d.ts",
   "scripts": {
     "clean": "rimraf lib",
     "lint": "tslint --force --format verbose \"src/**/*.ts\"",
-    "build": "./node_modules/.bin/ts-node ./scripts/build.ts",
+    "build": "tsc && tsc -P tsconfig.es.json",
     "deps": "./node_modules/.bin/ts-node ./scripts/deps.ts",
     "deps:reset": "./node_modules/.bin/ts-node ./scripts/reset.ts",
     "set-secret": "./node_modules/.bin/ts-node ./scripts/set-secret.ts --profile move",
