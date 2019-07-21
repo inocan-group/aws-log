@@ -4,8 +4,6 @@ import { parseArn } from "./invoke/parseArn";
 import { logger } from "./logger";
 import { buildInvocationRequest } from "./invoke/buildInvocationRequest";
 
-const lambda = new Lambda();
-
 /**
  * **invoke**
  *
@@ -30,17 +28,21 @@ export async function invoke<T = IDictionary>(
   request: T,
   options: IDictionary = {}
 ) {
+  const lambda = new (await import("aws-sdk")).Lambda();
   return new Promise((resolve, reject) => {
-    lambda.invoke(buildInvocationRequest(parseArn(fnArn), request), (err, data) => {
-      if (err) {
-        const { error } = logger().reloadContext();
-        const e = new Error(err.message);
-        e.stack = err.stack;
-        e.name = "InvocationError";
-        error(e, err);
-        throw e;
+    lambda.invoke(
+      buildInvocationRequest(parseArn(fnArn), request),
+      (err, data) => {
+        if (err) {
+          const { error } = logger().reloadContext();
+          const e = new Error(err.message);
+          e.stack = err.stack;
+          e.name = "InvocationError";
+          error(e, err);
+          throw e;
+        }
+        resolve(data);
       }
-      resolve(data);
-    });
+    );
   });
 }
