@@ -57,7 +57,9 @@ export declare const loggingApi: {
     getCorrelationId: typeof getCorrelationId;
 };
 export declare type ILoggerApi = typeof loggingApi;
-export declare type IAwsLogMaskingStrategy = "astericksWidthFixed"
+export declare type IAwsLogMaskingStrategy = 
+/** just show astericks and always show length of 5 */
+"astericksWidthFixed"
 /** show only astericks but the number is equavalent to length of value with a max length of 15 */
  | "astericksWidthDynamic"
 /**

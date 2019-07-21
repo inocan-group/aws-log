@@ -1,6 +1,6 @@
 {
   "name": "aws-log",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "description": "A logging framework for AWS Lambda",
   "license": "MIT",
   "repository": "https://github.com/inocan-group/aws-log",
@@ -21,32 +21,12 @@
   "scripts": {
     "clean": "rimraf lib",
     "lint": "tslint --force --format verbose \"src/**/*.ts\"",
-    "build": "rimraf lib && tsc && tsc -P tsconfig.es.json",
-    "deps": "./node_modules/.bin/ts-node ./scripts/deps.ts",
-    "deps:reset": "./node_modules/.bin/ts-node ./scripts/reset.ts",
-    "set-secret": "./node_modules/.bin/ts-node ./scripts/set-secret.ts --profile move",
-    "get-secret": "./node_modules/.bin/ts-node ./scripts/get-secret.ts --profile move",
-    "list-secrets": "./node_modules/.bin/ts-node ./scripts/list-secrets.ts --profile move",
-    "remove-secret": "./node_modules/.bin/ts-node ./scripts/remove-secret.ts --profile move",
-    "test": "./node_modules/.bin/ts-node ./scripts/test.ts ",
-    "invoke": "./node_modules/.bin/ts-node ./scripts/invoke.ts ",
-    "fns": "./node_modules/.bin/ts-node ./scripts/fns.ts ",
-    "deploy": "./node_modules/.bin/ts-node ./scripts/deploy.ts --profile move",
-    "deploy-production": "./node_modules/.bin/ts-node ./scripts/deploy.ts ",
-    "publish": "./node_modules/.bin/ts-node ./scripts/publish.ts ",
-    "package": "./node_modules/.bin/ts-node ./scripts/package.ts ",
-    "coverage": "nyc --reporter=html _mocha --require ts-node/register 'test/**/*-spec.ts' && open coverage/index.html",
-    "coverage:coveralls": "nyc --reporter=text-lcov _mocha --require ts-node/register 'test/**/*-spec.ts' | coveralls",
-    "coverage:codecov": "nyc _mocha --reporter=json --require ts-node/register 'test/**/*-spec.ts' > coverage/coverage.json",
-    "watch": "ts-node ./scripts/watch.ts",
-    "watch:test": "ts-node ./scripts/watch.ts test",
-    "watch:all": "ts-node ./scripts/watch.ts all",
-    "cli": "ts-node cli/index.ts --"
+    "test": "node_modules/.bin/ts-node scripts/test",
+    "build": "rimraf lib && tsc && tsc -P tsconfig.es.json"
   },
   "devDependencies": {
     "@types/chai": "^4.1.7",
     "@types/handlebars": "^4.0.39",
-    "@types/inquirer": "^0.0.43",
     "@types/js-yaml": "^3.12.1",
     "@types/lodash": "^4.14.118",
     "@types/mocha": "^5.2.6",
@@ -55,11 +35,9 @@
     "@types/stack-trace": "^0.0.29",
     "@types/traverse": "^0.6.32",
     "async-shelljs": "^0.1.2",
+    "aws-sdk": "^2.496.0",
     "chai": "^4.2.0",
-    "coveralls": "^3.0.2",
-    "faker": "^4.1.0",
     "handlebars": "^4.1.2",
-    "inquirer": "^6.3.1",
     "js-yaml": "^3.12.0",
     "lodash.first": "^3.0.0",
     "lodash.last": "^3.0.0",
@@ -74,13 +52,16 @@
     "ts-node": "^8.0.3",
     "tslint": "^5.5.0",
     "tslint-config-prettier": "^1.18.0",
-    "typescript": "^3.4.3"
+    "typescript": "^3.5.3"
   },
   "engines": {
     "node": ">=6.0.0"
   },
+  "peerDependencies": {
+    "aws-sdk": "^2.496.0"
+  },
   "dependencies": {
-    "common-types": "^1.10.11",
+    "common-types": "^1.10.13",
     "stack-trace": "^0.0.10",
     "traverse": "^0.6.6"
   }

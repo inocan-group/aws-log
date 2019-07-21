@@ -1,6 +1,5 @@
 import { IDictionary } from "common-types";
 import { IParsedArn } from "./parseStepArn";
-import { StepFunctions } from "aws-sdk";
 /**
  * buildRequest
  *
@@ -11,4 +10,4 @@ import { StepFunctions } from "aws-sdk";
  * @param request the dictionary of name/value pairings to be sent
  *    as the EVENT payload to the new Lambda function
  */
-export declare function buildStepFunctionRequest(arn: IParsedArn, request: IDictionary, name?: string): StepFunctions.StartExecutionInput;
+export declare function buildStepFunctionRequest(arn: IParsedArn, request: IDictionary, name?: string): import("aws-sdk/clients/stepfunctions").StartExecutionInput;
