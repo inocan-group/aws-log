@@ -1,6 +1,5 @@
 import chalk from "chalk";
 import "../test/testing/test-console";
-import { serverless } from "./lib/serverless";
 import { transpileJavascript, clearTranspiledJS } from "./lib/js";
 
 function prepOutput(output: string) {

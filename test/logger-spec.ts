@@ -63,16 +63,6 @@ describe("Logger Basics", () => {
     expect(config.context.logger).to.equal("aws-log");
   });
 
-  it("Severity responds to LOG_LEVEL environment variable", () => {
-    process.env.LOG_LEVEL = String(LogLevel.warn);
-    const api = logger();
-    const config = getState();
-    expect(config.correlationId).is.not.equal(undefined);
-    expect(config.severity).is.equal(LogLevel.warn);
-
-    process.env.LOG_LEVEL = String(LogLevel.error);
-  });
-
   it("Initialization with lambda() works as expected", () => {
     const api = logger().lambda(lambdaEvent, lambdaContext);
     testLoggingApi(api);
@@ -146,18 +136,17 @@ describe("Logger Basics", () => {
   });
 
   it("Adding localContext later is additive and shows in logging", () => {
-    process.env.LOG_LEVEL = String(LogLevel.info);
-    process.env.LOG_TESTING = "true";
+    process.env.AWS_STAGE = "dev";
     const log = logger().lambda(lambdaEvent, lambdaContext, { baz: "test" }); // set context
     log.addToLocalContext({ foo: "bar" });
     const response = log.info("test message", { p1: 1, p2: 2 });
+
     expect(response.local.foo).to.equal("bar");
     expect(response.local.baz).to.equal("test");
   });
 
   it("Getting context returns all context", async () => {
-    process.env.LOG_LEVEL = String(LogLevel.info);
-    process.env.LOG_TESTING = "true";
+    process.env.AWS_STAGE = "dev";
     const log = logger().lambda(lambdaEvent, lambdaContext, { baz: "test" });
     const ctx = log.getContext();
     expect(ctx).to.be.an("object");

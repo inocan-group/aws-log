@@ -5,12 +5,14 @@ import {
   getRootProperties,
   getLocalContext,
   addToLocalContext as addLocalContext,
-  getCorrelationId
+  getCorrelationId,
+  getSessionSampling
 } from "./state";
-import { LogLevel, IAwsLog, IAwsLogConfig } from "../types";
+import { LogLevel, IAwsLog } from "../types";
 import traverse, { map as tmap } from "traverse";
 import { config } from "../logger";
 import { sample } from "../shared/sample";
+import { sessionSample } from "../shared/sessionSample";
 
 export const loggingApi = {
   /** an alias for the "info" level of logging */
@@ -47,7 +49,7 @@ export const loggingApi = {
    */
   setMaskedValues,
   /**
-   * **bespokeMaskingStrategy**
+   * **pathBasedMaskingStrategy**
    *
    * Allows a particular _path_ (or _paths_) to have a specific
    * masking strategy
@@ -58,6 +60,7 @@ export const loggingApi = {
    * to indicate properties within a hash/dictionary
    */
   pathBasedMaskingStrategy,
+  setStrategyForValue,
   getContext: () => getContext(),
   /**
    * **getCorrelationId**
@@ -114,10 +117,18 @@ function addToMaskedValues(
   return loggingApi;
 }
 
+/**
+ * Sets a masking strategy for a specific value (versus using the default
+ * masking strategy)
+ */
 function setStrategyForValue(value: string, strategy: IAwsLogMaskingStrategy) {
   _maskingStrategy[value] = strategy;
 }
 
+/**
+ * Sets the _masking strategy_ to be used at a particular **path** within the logging
+ * structure.
+ */
 function pathBasedMaskingStrategy(
   strategy: IAwsLogMaskingStrategy,
   ...paths: string[]
@@ -127,6 +138,10 @@ function pathBasedMaskingStrategy(
   });
 }
 
+/**
+ * Set values that when logged -- regardless of location/path -- should
+ * be masked.
+ */
 function setMaskedValues(
   ...props: Array<string | [string, IAwsLogMaskingStrategy]>
 ) {
@@ -205,26 +220,18 @@ export function stdout(hash: Partial<IAwsLog> & { message: string }) {
 
   const output = {
     message: hash.message,
+    severity: hash.severity,
     payload: hash.payload,
     ...{ local },
     ...rootProps,
     ...{ context }
   } as IAwsLog;
 
-  if (process.env.LOG_TESTING) {
-    return output;
-  } else {
-    console.log(JSON.stringify(output, null, 2));
-  }
+  return output;
 }
 
 export function debug(message: string, params: IDictionary = {}) {
-  const status: "all" | "none" =
-    config.debug === "sample-by-event"
-      ? sample(config.sampleRate)
-      : (config.debug as "all" | "none");
-
-  if (status === "all") {
+  if (statusForLogLevel("debug") === "all") {
     return stdout({
       message: maskMessage(message),
       severity: LogLevel.debug,
@@ -234,18 +241,33 @@ export function debug(message: string, params: IDictionary = {}) {
 }
 
 export function info(message: string, params: IDictionary = {}) {
-  const status: "all" | "none" =
-    config.info === "sample-by-event"
-      ? sample(config.sampleRate)
-      : (config.info as "all" | "none");
-
-  if (status === "all") {
+  if (statusForLogLevel("info") === "all") {
     return stdout({
       message: maskMessage(message),
       severity: LogLevel.info,
       payload: params
     });
   }
+}
+
+function statusForLogLevel(logLevel: keyof typeof LogLevel) {
+  let status: "all" | "none";
+  switch (config[logLevel]) {
+    case "all":
+    case "none":
+      status = config[logLevel] as "all" | "none";
+      break;
+    case "sample-by-session":
+      status = getSessionSampling();
+      break;
+    case "sample-by-event":
+      status = sample(config.sampleRate);
+      break;
+    default:
+      throw new Error(`Logging API configured incorrectly for 'info' logging`);
+  }
+
+  return status;
 }
 
 export function warn(message: string, params: IDictionary = {}) {
