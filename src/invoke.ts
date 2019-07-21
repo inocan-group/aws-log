@@ -1,4 +1,3 @@
-import { Lambda } from "aws-sdk";
 import { IDictionary } from "common-types";
 import { parseArn } from "./invoke/parseArn";
 import { logger } from "./logger";
