@@ -227,7 +227,12 @@ export function stdout(hash: Partial<IAwsLog> & { message: string }) {
     ...{ context }
   } as IAwsLog;
 
-  return output;
+  if (process.env.LOG_TESTING) {
+    return output;
+  } else {
+    console.log(JSON.stringify(output, null, 2));
+    return output;
+  }
 }
 
 export function debug(message: string, params: IDictionary = {}) {

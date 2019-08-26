@@ -29,6 +29,9 @@ const lambdaContext: IAWSLambaContext = {
 };
 
 describe("Logger Basics", () => {
+  before(() => {
+    process.env.LOG_TESTING = "true";
+  });
   it("logger() provides expected API", () => {
     const api = logger();
     // Logging functions
