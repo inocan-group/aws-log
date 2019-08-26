@@ -11,7 +11,12 @@ const setMaskedValues = __testAccess__.setMaskedValues;
 const pathBasedMaskingStrategy = __testAccess__.pathBasedMaskingStrategy;
 const maskMessage = __testAccess__.maskMessage;
 
+process.env.LOG_TESTING = "true";
+
 describe("masking values => ", () => {
+  before(() => {
+    process.env.LOG_TESTING = "true";
+  });
   const data1 = {
     foo: "badsfdf99asdffdfdfdfd",
     bar: "sdfsdfsdfdsfdf",
