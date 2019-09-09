@@ -13,4 +13,4 @@ import { IParsedArn } from "./parseArn";
  */
 export declare function buildInvocationRequest<T extends IDictionary & {
     headers?: IDictionary<string>;
-}>(arn: IParsedArn, request: T): import("aws-sdk/clients/lambda").InvocationRequest;
+}>(arn: IParsedArn, request: T): import("aws-sdk").Lambda.InvocationRequest;

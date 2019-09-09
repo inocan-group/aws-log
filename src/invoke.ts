@@ -1,7 +1,8 @@
-import { IDictionary } from "common-types";
+import { IDictionary, IHttpRequestHeaders } from "common-types";
 import { parseArn } from "./invoke/parseArn";
 import { logger } from "./logger";
 import { buildInvocationRequest } from "./invoke/buildInvocationRequest";
+export type InvocationResponse = import("aws-sdk").Lambda.InvocationResponse;
 
 /**
  * **invoke**
@@ -25,8 +26,12 @@ export async function invoke<T = IDictionary>(
   fnArn: string,
   /** the request object to be passed to the calling function */
   request: T,
-  options: IDictionary = {}
-) {
+  /**
+   * The request headers to send along with the request
+   */
+  headers?: IHttpRequestHeaders
+): Promise<InvocationResponse> {
+  // TODO: come back to this idea of "headers" here
   const lambda = new (await import("aws-sdk")).Lambda();
   return new Promise((resolve, reject) => {
     lambda.invoke(

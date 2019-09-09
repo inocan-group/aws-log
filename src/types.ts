@@ -67,7 +67,7 @@ export interface IAwsLog extends IDictionary {
  */
 export interface IAwsInvocationContext {
   headers: {
-    "x-correlation-id": string;
+    "X-Correlation-Id": string;
     "x-calling-function": string;
     "x-calling-request-id": string;
   };

@@ -1,4 +1,5 @@
-import { IDictionary } from "common-types";
+import { IDictionary, IHttpRequestHeaders } from "common-types";
+export declare type InvocationResponse = import("aws-sdk").Lambda.InvocationResponse;
 /**
  * **invoke**
  *
@@ -20,4 +21,8 @@ export declare function invoke<T = IDictionary>(
  */
 fnArn: string, 
 /** the request object to be passed to the calling function */
-request: T, options?: IDictionary): Promise<unknown>;
+request: T, 
+/**
+ * The request headers to send along with the request
+ */
+headers?: IHttpRequestHeaders): Promise<InvocationResponse>;

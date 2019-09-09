@@ -15,7 +15,7 @@ export declare const loggingApi: {
     /**
      * Allows the local context to be appended to
      */
-    addToLocalContext: typeof addToLocalContext;
+    addToLocalContext: typeof addToLocalCtx;
     /**
      * **addToMaskedValues**
      *
@@ -86,7 +86,7 @@ declare function addToMaskedValues(...props: Array<string | [string, IAwsLogMask
     /**
      * Allows the local context to be appended to
      */
-    addToLocalContext: typeof addToLocalContext;
+    addToLocalContext: typeof addToLocalCtx;
     /**
      * **addToMaskedValues**
      *
@@ -155,7 +155,7 @@ declare function setMaskedValues(...props: Array<string | [string, IAwsLogMaskin
     /**
      * Allows the local context to be appended to
      */
-    addToLocalContext: typeof addToLocalContext;
+    addToLocalContext: typeof addToLocalCtx;
     /**
      * **addToMaskedValues**
      *
@@ -241,7 +241,7 @@ msgOrError: string | IErrorWithCode,
 paramsOrErr?: IDictionary | IErrorWithCode, 
 /** an error object */
 err?: IErrorWithCode): IAwsLog;
-export declare function addToLocalContext(ctx: IDictionary): {
+export declare function addToLocalCtx(ctx: IDictionary): {
     /** an alias for the "info" level of logging */
     log: typeof info;
     /** the most verbose level of logging, usually reserved for debugging purposes only */
@@ -255,7 +255,7 @@ export declare function addToLocalContext(ctx: IDictionary): {
     /**
      * Allows the local context to be appended to
      */
-    addToLocalContext: typeof addToLocalContext;
+    addToLocalContext: typeof addToLocalCtx;
     /**
      * **addToMaskedValues**
      *
