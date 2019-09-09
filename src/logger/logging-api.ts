@@ -28,7 +28,7 @@ export const loggingApi = {
   /**
    * Allows the local context to be appended to
    */
-  addToLocalContext,
+  addToLocalContext: addToLocalCtx,
   /**
    * **addToMaskedValues**
    *
@@ -361,7 +361,7 @@ function parseErrParameters(
       };
 }
 
-export function addToLocalContext(ctx: IDictionary) {
+export function addToLocalCtx(ctx: IDictionary) {
   addLocalContext(ctx);
 
   return loggingApi;

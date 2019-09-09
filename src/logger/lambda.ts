@@ -3,11 +3,18 @@ import {
   IAWSLambdaProxyIntegrationRequest,
   IAWSLambaContext
 } from "common-types";
-import { setCorrelationId, setContext, setLocalContext } from "./state";
-import { findCorrelationId, createCorrelationId } from "./correlationId";
-import { loggingApi } from "./logging-api";
+import {
+  setCorrelationId,
+  setContext,
+  setLocalContext,
+  findCorrelationId,
+  createCorrelationId,
+  loggingApi
+} from "./index";
 
-export type ILambdaEvent<T = IDictionary> = IAWSLambdaProxyIntegrationRequest | T;
+export type ILambdaEvent<T = IDictionary> =
+  | IAWSLambdaProxyIntegrationRequest
+  | T;
 
 export function lambda(
   event: ILambdaEvent,

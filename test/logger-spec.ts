@@ -1,9 +1,8 @@
 // tslint:disable:no-implicit-dependencies
 import * as chai from "chai";
-import * as helpers from "./testing/helpers";
 import { logger } from "../src/logger";
-import { getState, setSeverity } from "../src/logger/state";
-import { LogLevel, IAwsLog } from "../src/types";
+import { getState } from "../src/logger/state";
+import { LogLevel } from "../src/types";
 import { IDictionary, IAWSLambaContext } from "common-types";
 import { getContext } from "../src/logger/state";
 
@@ -68,6 +67,7 @@ describe("Logger Basics", () => {
 
   it("Initialization with lambda() works as expected", () => {
     const api = logger().lambda(lambdaEvent, lambdaContext);
+
     testLoggingApi(api);
     missingContextApi(api);
     const config = getState();

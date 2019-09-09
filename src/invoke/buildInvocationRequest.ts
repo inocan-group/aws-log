@@ -17,12 +17,10 @@ export function buildInvocationRequest<
   T extends IDictionary & {
     headers?: IDictionary<string>;
   }
->(arn: IParsedArn, request: T) {
-  const FunctionName = `arn:aws:lambda:${arn.region}:${arn.account}:function:${
-    arn.appName
-  }-${arn.stage}-${arn.fn}`;
+>(arn: IParsedArn, request: T): import("aws-sdk").Lambda.InvocationRequest {
+  const FunctionName = `arn:aws:lambda:${arn.region}:${arn.account}:function:${arn.appName}-${arn.stage}-${arn.fn}`;
   const correlationHeaders = {
-    "x-correlation-id": getCorrelationId(),
+    "X-Correlation-Id": getCorrelationId(),
     "x-calling-function": getContext().functionName,
     "x-calling-request-id": getContext().requestId
   };
@@ -37,5 +35,5 @@ export function buildInvocationRequest<
     Payload,
     LogType: "None",
     InvocationType: "Event"
-  } as import("aws-sdk").Lambda.InvocationRequest;
+  };
 }

@@ -6,7 +6,7 @@ export declare function lambda(event: ILambdaEvent, ctx: IAWSLambaContext, optio
     info: typeof import("./logging-api").info;
     warn: typeof import("./logging-api").warn;
     error: typeof import("./logging-api").error;
-    addToLocalContext: typeof import("./logging-api").addToLocalContext;
+    addToLocalContext: typeof import("./logging-api").addToLocalCtx;
     addToMaskedValues: (...props: (string | [string, import("./logging-api").IAwsLogMaskingStrategy])[]) => any;
     setMaskedValues: (...props: (string | [string, import("./logging-api").IAwsLogMaskingStrategy])[]) => any;
     pathBasedMaskingStrategy: (strategy: import("./logging-api").IAwsLogMaskingStrategy, ...paths: string[]) => void;

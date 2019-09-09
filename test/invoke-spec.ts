@@ -123,18 +123,19 @@ describe("invoke :: buildInvocationRequest() →", () => {
     process.env.APP_NAME = "my-services";
     const temp = logger();
 
-    const response = buildInvocationRequest(parseArn("myFunc"), { foo: 1, bar: 2 });
+    const response = buildInvocationRequest(parseArn("myFunc"), {
+      foo: 1,
+      bar: 2
+    });
     expect(response.Payload).to.be.a("string");
     const payload = JSON.parse(response.Payload as string);
     expect(payload.headers)
       .to.be.an("object")
-      .and.haveOwnProperty("x-correlation-id");
+      .and.haveOwnProperty("X-Correlation-Id");
     expect(payload.headers["x-calling-function"]);
 
     expect(response.FunctionName).to.equal(
-      `arn:aws:lambda:us-east-1:9378553667040:function:${process.env.APP_NAME}-${
-        process.env.AWS_STAGE
-      }-myFunc`
+      `arn:aws:lambda:us-east-1:9378553667040:function:${process.env.APP_NAME}-${process.env.AWS_STAGE}-myFunc`
     );
 
     expect(response.LogType).to.equal("None");

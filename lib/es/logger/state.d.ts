@@ -22,7 +22,7 @@ export declare function setContext(ctx: IDictionary): {
     info: typeof import("./logging-api").info;
     warn: typeof import("./logging-api").warn;
     error: typeof import("./logging-api").error;
-    addToLocalContext: typeof import("./logging-api").addToLocalContext;
+    addToLocalContext: typeof import("./logging-api").addToLocalCtx;
     addToMaskedValues: (...props: (string | [string, import("./logging-api").IAwsLogMaskingStrategy])[]) => any;
     setMaskedValues: (...props: (string | [string, import("./logging-api").IAwsLogMaskingStrategy])[]) => any;
     pathBasedMaskingStrategy: (strategy: import("./logging-api").IAwsLogMaskingStrategy, ...paths: string[]) => void;
@@ -41,7 +41,7 @@ export declare function setLocalContext(ctx: IDictionary): {
     info: typeof import("./logging-api").info;
     warn: typeof import("./logging-api").warn;
     error: typeof import("./logging-api").error;
-    addToLocalContext: typeof import("./logging-api").addToLocalContext;
+    addToLocalContext: typeof import("./logging-api").addToLocalCtx;
     addToMaskedValues: (...props: (string | [string, import("./logging-api").IAwsLogMaskingStrategy])[]) => any;
     setMaskedValues: (...props: (string | [string, import("./logging-api").IAwsLogMaskingStrategy])[]) => any;
     pathBasedMaskingStrategy: (strategy: import("./logging-api").IAwsLogMaskingStrategy, ...paths: string[]) => void;
@@ -58,7 +58,7 @@ export declare function addToLocalContext(ctx: IDictionary): {
     info: typeof import("./logging-api").info;
     warn: typeof import("./logging-api").warn;
     error: typeof import("./logging-api").error;
-    addToLocalContext: typeof import("./logging-api").addToLocalContext;
+    addToLocalContext: typeof import("./logging-api").addToLocalCtx;
     addToMaskedValues: (...props: (string | [string, import("./logging-api").IAwsLogMaskingStrategy])[]) => any;
     setMaskedValues: (...props: (string | [string, import("./logging-api").IAwsLogMaskingStrategy])[]) => any;
     pathBasedMaskingStrategy: (strategy: import("./logging-api").IAwsLogMaskingStrategy, ...paths: string[]) => void;
@@ -82,7 +82,7 @@ export declare function restoreState(): {
     info: typeof import("./logging-api").info;
     warn: typeof import("./logging-api").warn;
     error: typeof import("./logging-api").error;
-    addToLocalContext: typeof import("./logging-api").addToLocalContext;
+    addToLocalContext: typeof import("./logging-api").addToLocalCtx;
     addToMaskedValues: (...props: (string | [string, import("./logging-api").IAwsLogMaskingStrategy])[]) => any;
     setMaskedValues: (...props: (string | [string, import("./logging-api").IAwsLogMaskingStrategy])[]) => any;
     pathBasedMaskingStrategy: (strategy: import("./logging-api").IAwsLogMaskingStrategy, ...paths: string[]) => void;

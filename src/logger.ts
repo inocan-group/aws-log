@@ -6,10 +6,9 @@ import {
   clearState,
   contextApi
 } from "./logger/state";
-import { createCorrelationId } from "./logger/correlationId";
 import { IAwsLogConfig } from "./types";
 import { sessionSample } from "./shared/sessionSample";
-export { setSeverity, setContext, getState } from "./logger/state";
+import { createCorrelationId } from "./logger/index";
 
 export const logLevelLookup: IDictionary<number> = {
   DEBUG: 0,

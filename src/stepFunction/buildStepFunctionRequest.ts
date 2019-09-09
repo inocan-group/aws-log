@@ -17,13 +17,11 @@ export function buildStepFunctionRequest(
   request: IDictionary,
   name?: string
 ) {
-  const stateMachineArn = `arn:aws:states:${arn.region}:${
-    arn.account
-  }:function:${arn.appName}-${arn.fn}`;
+  const stateMachineArn = `arn:aws:states:${arn.region}:${arn.account}:function:${arn.appName}-${arn.fn}`;
 
   let input: string;
   if (request.headers) {
-    request.headers["x-correlation-id"] = getCorrelationId();
+    request.headers["X-Correlation-Id"] = getCorrelationId();
     request.headers["x-calling-function"] = getContext().functionName;
     request.headers["x-calling-request-id"] = getContext().requestId;
     input = JSON.stringify(request);
@@ -32,7 +30,7 @@ export function buildStepFunctionRequest(
       ...request,
       ...{
         headers: {
-          "x-correlation-id": getCorrelationId(),
+          "X-Correlation-Id": getCorrelationId(),
           "x-calling-function": getContext().functionName,
           "x-calling-request-id": getContext().requestId
         }

@@ -1,6 +1,6 @@
 {
   "name": "aws-log",
-  "version": "0.8.5",
+  "version": "0.9.0",
   "description": "A logging framework for AWS Lambda",
   "license": "MIT",
   "repository": "https://github.com/inocan-group/aws-log",
@@ -58,7 +58,7 @@
     "aws-sdk": ">=2.518.0"
   },
   "dependencies": {
-    "common-types": "^1.11.18",
+    "common-types": "^1.12.1",
     "stack-trace": "^0.0.10",
     "traverse": "^0.6.6"
   }
