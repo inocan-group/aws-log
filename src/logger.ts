@@ -8,7 +8,7 @@ import {
 } from "./logger/state";
 import { IAwsLogConfig } from "./types";
 import { sessionSample } from "./shared/sessionSample";
-import { createCorrelationId } from "./logger/index";
+import { createCorrelationId } from "./logger/createCorrelationId";
 
 export const logLevelLookup: IDictionary<number> = {
   DEBUG: 0,

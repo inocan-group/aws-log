@@ -3,14 +3,10 @@ import {
   IAWSLambdaProxyIntegrationRequest,
   IAWSLambaContext
 } from "common-types";
-import {
-  setCorrelationId,
-  setContext,
-  setLocalContext,
-  findCorrelationId,
-  createCorrelationId,
-  loggingApi
-} from "./index";
+import { setCorrelationId, setContext, setLocalContext } from "./state";
+import { findCorrelationId } from "./findCorrelationId";
+import { createCorrelationId } from "./createCorrelationId";
+import { loggingApi } from "./logging-api";
 
 export type ILambdaEvent<T = IDictionary> =
   | IAWSLambdaProxyIntegrationRequest
