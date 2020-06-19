@@ -1,5 +1,5 @@
-import { ILambdaEvent } from "./lambda";
 import { IHttpRequestHeaders } from "common-types";
+import { ILambdaEvent } from "./lambda";
 /**
  * Looks in various places to find an existing `correlationId`
  */

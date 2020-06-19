@@ -1,5 +1,6 @@
+import { IDictionary, IHttpRequestHeaders } from "common-types";
+
 import { ILambdaEvent } from "./lambda";
-import { IHttpRequestHeaders, IDictionary } from "common-types";
 
 /**
  * Looks in various places to find an existing `correlationId`
@@ -30,7 +31,7 @@ export function findCorrelationId(
     }
   }
 
-  if (event.headers) {
+  if (typeof event === "object" && event && event.headers) {
     let result: false | string = false;
     let idx = 0;
     while (!result && idx <= lookIn.length - 1) {
