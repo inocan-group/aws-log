@@ -47,7 +47,8 @@ const defaultConfigs: IDictionary<IAwsLogConfig> = {
 
 export function logger(requestedConfig?: Partial<IAwsLogConfig>) {
   const environment = process.env.AWS_STAGE || "dev";
-  const defaultConfig = defaultConfigs[environment];
+
+  const defaultConfig = environment in defaultConfigs ? defaultConfigs[environment] : defaultConfigs["dev"];
 
   if (requestedConfig) {
     config = sessionSample({ ...defaultConfig, ...requestedConfig });
