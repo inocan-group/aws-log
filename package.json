@@ -1,6 +1,6 @@
 {
   "name": "aws-log",
-  "version": "0.9.2",
+  "version": "0.9.3",
   "description": "A logging framework for AWS Lambda",
   "license": "MIT",
   "repository": "https://github.com/inocan-group/aws-log",

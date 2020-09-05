@@ -47,15 +47,20 @@ const defaultConfigs: IDictionary<IAwsLogConfig> = {
 
 export function logger(requestedConfig?: Partial<IAwsLogConfig>) {
   const environment = process.env.AWS_STAGE || "dev";
+
   const defaultConfig = environment in defaultConfigs ? defaultConfigs[environment] : defaultConfigs["dev"];
+
   if (requestedConfig) {
     config = sessionSample({ ...defaultConfig, ...requestedConfig });
-  } else {
-    config = defaultConfig;
   }
+  else if (config === undefined) {
+    config = defaultConfig
+  } 
+
   clearState();
   initSeverity();
   setCorrelationId(createCorrelationId());
 
   return { ...loggingApi, ...contextApi };
 }
+
