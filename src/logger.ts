@@ -1,10 +1,11 @@
 import { IDictionary } from "common-types";
-import { loggingApi } from "./logger/logging-api";
+import { ILoggerApi, loggingApi } from "./logger/logging-api";
 import {
   initSeverity,
   setCorrelationId,
   clearState,
-  contextApi
+  contextApi,
+  IContextApi,
 } from "./logger/state";
 import { IAwsLogConfig } from "./types";
 import { sessionSample } from "./shared/sessionSample";
@@ -14,7 +15,7 @@ export const logLevelLookup: IDictionary<number> = {
   DEBUG: 0,
   INFO: 1,
   WARN: 2,
-  ERROR: 3
+  ERROR: 3,
 };
 
 export let config: IAwsLogConfig;
@@ -23,39 +24,43 @@ const defaultConfigs: IDictionary<IAwsLogConfig> = {
     debug: "all",
     info: "all",
     warn: "all",
-    error: "all"
+    error: "all",
   },
   test: {
     debug: "all",
     info: "all",
     warn: "all",
-    error: "all"
+    error: "all",
   },
   stage: {
     debug: "none",
     info: "sample-by-session",
     warn: "all",
-    error: "all"
+    error: "all",
   },
   prod: {
     debug: "none",
     info: "sample-by-session",
     warn: "all",
-    error: "all"
-  }
+    error: "all",
+  },
 };
 
-export function logger(requestedConfig?: Partial<IAwsLogConfig>) {
+export function logger(
+  requestedConfig?: Partial<IAwsLogConfig>
+): ILoggerApi & IContextApi {
   const environment = process.env.AWS_STAGE || "dev";
 
-  const defaultConfig = environment in defaultConfigs ? defaultConfigs[environment] : defaultConfigs["dev"];
+  const defaultConfig =
+    environment in defaultConfigs
+      ? defaultConfigs[environment]
+      : defaultConfigs["dev"];
 
   if (requestedConfig) {
     config = sessionSample({ ...defaultConfig, ...requestedConfig });
+  } else if (config === undefined) {
+    config = defaultConfig;
   }
-  else if (config === undefined) {
-    config = defaultConfig
-  } 
 
   clearState();
   initSeverity();
@@ -63,4 +68,3 @@ export function logger(requestedConfig?: Partial<IAwsLogConfig>) {
 
   return { ...loggingApi, ...contextApi };
 }
-
