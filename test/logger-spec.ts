@@ -140,8 +140,8 @@ describe("Logger Basics", () => {
     log.addToLocalContext({ foo: "bar" });
     const response = log.info("test message", { p1: 1, p2: 2 });
 
-    expect(response.local.foo).to.equal("bar");
-    expect(response.local.baz).to.equal("test");
+    expect(response.local?.foo).to.equal("bar");
+    expect(response.local?.baz).to.equal("test");
   });
 
   it("Getting context returns all context", async () => {
@@ -158,18 +158,18 @@ describe("Logger Basics", () => {
 
   it("Using random stage should use dev stage defaultConfig", () => {
     process.env.AWS_STAGE = "dev";
-    const log = logger().lambda(lambdaEvent, lambdaContext, { baz: "test" }); 
-    const infoLogResult = log.info("Test line")
-    const debugLogResult = log.debug("Test line")
-    const warnLogResult = log.warn("Test line")
-    const errorLogResult = log.error("Test line")
-    
+    process.env.LOG_TESTING = "true";
+    const log = logger().lambda(lambdaEvent, lambdaContext, { baz: "test" });
+    const infoLogResult = log.info("Test line");
+    const debugLogResult = log.debug("Test line");
+    const warnLogResult = log.warn("Test line");
+    const errorLogResult = log.error("Test line");
 
-    expect(infoLogResult).to.not.be.undefined
-    expect(debugLogResult).to.not.be.undefined
-    expect(warnLogResult).to.not.be.undefined
-    expect(errorLogResult).to.not.be.undefined
-  })
+    expect(infoLogResult).to.not.be.undefined;
+    expect(debugLogResult).to.not.be.undefined;
+    expect(warnLogResult).to.not.be.undefined;
+    expect(errorLogResult).to.not.be.undefined;
+  });
 });
 
 function testLoggingApi(api: any) {

@@ -70,10 +70,13 @@ export function setLocalContext(ctx: IDictionary) {
 }
 
 /**
- * Allows the local context to be added to after the intial setting
+ * Allows the _local context_ to be added to after the intial setting
  */
-export function addToLocalContext(ctx: IDictionary) {
-  activeState.localContext = { ...activeState.localContext, ...ctx };
+export function addToLocalContext(local: IDictionary) {
+  console.log(local);
+
+  activeState.localContext = { ...activeState.localContext, ...local };
+  console.log(activeState.localContext);
 
   return loggingApi;
 }
@@ -167,6 +170,8 @@ export const contextApi = {
   /** allow for reloading context to last known point */
   reloadContext: restoreState,
 };
+
+export type IContextApi = typeof contextApi;
 
 let _sessionSampling: "all" | "none";
 
