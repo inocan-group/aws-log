@@ -1,65 +1,65 @@
-import { IDictionary, IHttpRequestHeaders } from "common-types";
+import { IAWSLambaContext, isLambdaProxyRequest } from "common-types";
 
 import { ILambdaEvent } from "./lambda";
+export type IPossibleCorrelationIds = {
+  "X-Correlation-Id"?: string;
+  "x-correlation-id"?: string;
+  "@x-correlation-id"?: string;
+  "@X-Correlation-Id"?: string;
+};
+
+export function hasHeadersProperty(
+  obj: unknown
+): obj is Record<string, unknown> & { headers: IPossibleCorrelationIds } {
+  return (
+    obj &&
+    typeof obj === "object" &&
+    Object.keys(obj).includes("headers") &&
+    typeof (obj as Record<string, unknown>)?.headers === "object"
+  );
+}
 
 /**
- * Looks in various places to find an existing `correlationId`
+ * Looks for a Correlation ID in:
+ *
+ * - AWS Gateway headers (if they exist),
+ * - in a `headers` property of the **body** (if it exists)
  */
 export function findCorrelationId(
   event: ILambdaEvent,
-  headers?: IHttpRequestHeaders
+  ctx: IAWSLambaContext
 ): string | false {
-  const lookIn = [
+  const lookIn: Array<keyof IPossibleCorrelationIds> = [
     "X-Correlation-Id",
     "x-correlation-id",
     "@x-correlation-id",
-    "@X-Correlation-Id"
+    "@X-Correlation-Id",
   ];
 
-  if (headers) {
-    let result: false | string = false;
-    let idx = 0;
-    while (!result && idx <= lookIn.length - 1) {
-      if (headers[lookIn[idx]]) {
-        result = headers[lookIn[idx]] as string;
+  let result: string | undefined;
+  if (hasHeadersProperty(event)) {
+    for (const key of lookIn) {
+      if (Object.keys(event.headers).includes(key)) {
+        result = event.headers?.[key]
+          ? (event.headers?.[key] as string)
+          : result;
       }
-      idx++;
-    }
-
-    if (result) {
-      return result;
     }
   }
 
-  if (typeof event === "object" && event && event.headers) {
-    let result: false | string = false;
-    let idx = 0;
-    while (!result && idx <= lookIn.length - 1) {
-      if (event.headers[lookIn[idx]]) {
-        result = event.headers[lookIn[idx]] as string;
-      }
-      idx++;
-    }
+  if (result) {
+    return result;
+  }
 
-    if (result) {
-      return result;
+  const body = event?.body ? JSON.parse(event?.body || "") : undefined;
+
+  if (hasHeadersProperty(body)) {
+    for (const key of lookIn) {
+      if (Object.keys(body.headers).includes(key)) {
+        result = body.headers?.[key];
+      }
     }
   }
 
-  if (typeof event === "object") {
-    let result: false | string = false;
-    let idx = 0;
-    while (!result && idx <= lookIn.length - 1) {
-      if ((event as IDictionary)[lookIn[idx]]) {
-        result = (event as IDictionary)[lookIn[idx]] as string;
-      }
-      idx++;
-    }
-
-    if (result) {
-      return result;
-    }
-  }
-
-  return false;
+  return result ? result : false;
 }

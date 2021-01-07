@@ -13,8 +13,8 @@ const lambdaEvent: IDictionary = {
   foo: 1,
   bar: 2,
   headers: {
-    "@x-correlation-id": "1234"
-  }
+    "@x-correlation-id": "1234",
+  },
 };
 const lambdaContext: IAWSLambaContext = {
   functionName: "foobar",
@@ -24,7 +24,7 @@ const lambdaContext: IAWSLambaContext = {
   memoryLimitInMB: "512",
   awsRequestId: "rid1234",
   logGroupName: "log-group",
-  logStreamName: "log-stream"
+  logStreamName: "log-stream",
 };
 
 describe("Logger Basics", () => {
@@ -84,7 +84,7 @@ describe("Logger Basics", () => {
     const api = logger().lambda(lambdaEvent, lambdaContext, {
       foo: 1,
       bar: 2,
-      context: "conflict"
+      context: "conflict",
     });
     const config = getState();
     expect(config.context).to.be.an("object");
@@ -100,21 +100,17 @@ describe("Logger Basics", () => {
 
   it("nothing logged when logging level is too low", () => {
     process.env.LOG_TESTING = "true";
-    let { debug, info, warn, error } = logger({
+    const { debug, info, warn, error } = logger({
       debug: "none",
       info: "none",
       warn: "all",
-      error: "all"
+      error: "all",
     });
     expect(debug("testing")).to.equal(undefined);
     expect(info("testing")).to.equal(undefined);
-    expect(warn("testing"))
-      .to.not.equal(undefined)
-      .and.to.be.a("string");
+    expect(warn("testing")).to.not.equal(undefined).and.to.be.a("string");
 
-    expect(error("testing"))
-      .to.not.equal(undefined)
-      .and.to.be.a("string");
+    expect(error("testing")).to.not.equal(undefined).and.to.be.a("string");
 
     process.env.LOG_TESTING = "";
   });
@@ -154,7 +150,7 @@ describe("Logger Basics", () => {
     const ctx = log.getContext();
     expect(ctx).to.be.an("object");
 
-    ["awsRegion", "stage", "functionName", "awsRequestId"].map(prop => {
+    ["awsRegion", "stage", "functionName", "awsRequestId"].map((prop) => {
       expect(ctx).to.haveOwnProperty(prop);
       expect(ctx[prop]).to.be.a("string");
     });

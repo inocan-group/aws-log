@@ -1,18 +1,16 @@
 import { IDictionary } from "common-types";
 import {
-  getSeverity,
   getContext,
   getRootProperties,
   getLocalContext,
   addToLocalContext as addLocalContext,
   getCorrelationId,
-  getSessionSampling
+  getSessionSampling,
 } from "./state";
 import { LogLevel, IAwsLog } from "../types";
-import traverse, { map as tmap } from "traverse";
+import traverse from "traverse";
 import { config } from "../logger";
 import { sample } from "../shared/sample";
-import { sessionSample } from "../shared/sessionSample";
 
 export const loggingApi = {
   /** an alias for the "info" level of logging */
@@ -67,7 +65,7 @@ export const loggingApi = {
    *
    * Get's the current correlation ID
    */
-  getCorrelationId
+  getCorrelationId,
 };
 
 export type ILoggerApi = typeof loggingApi;
@@ -98,13 +96,13 @@ const _maskedProperties = [];
 let _maskingStrategy: IDictionary<IAwsLogMaskingStrategy> & {
   default: IAwsLogMaskingStrategy;
 } = {
-  default: "astericksWidthDynamic"
+  default: "astericksWidthDynamic",
 };
 
 function addToMaskedValues(
   ...props: Array<string | [string, IAwsLogMaskingStrategy]>
 ) {
-  const values = props.map(i => {
+  const values = props.map((i) => {
     if (Array.isArray(i)) {
       const [value, strategy] = i;
       setStrategyForValue(value, strategy);
@@ -133,7 +131,7 @@ function pathBasedMaskingStrategy(
   strategy: IAwsLogMaskingStrategy,
   ...paths: string[]
 ) {
-  paths.map(path => {
+  paths.map((path) => {
     _maskingStrategy[path] = strategy;
   });
 }
@@ -159,7 +157,7 @@ function setMaskedValues(
  */
 function mask<T extends IDictionary = IDictionary>(hash: T) {
   // value-masking strategy
-  const cb = function(v: string) {
+  const cb = function (v: string) {
     if (this.isLeaf && _maskedValues.has(v))
       this.update(applyMask(this.path, v));
   };
@@ -173,7 +171,7 @@ function mask<T extends IDictionary = IDictionary>(hash: T) {
  * removes them.
  */
 function maskMessage(msg: string) {
-  Array.from(_maskedValues).map(v => {
+  Array.from(_maskedValues).map((v) => {
     const regEx = new RegExp(v, "g");
     const strategy = _maskingStrategy[v] || _maskingStrategy.default;
 
@@ -199,7 +197,7 @@ const maskStrategies = {
   revealEnd4: (v: string) =>
     v.length >= 5 ? "*".repeat(v.length - 4) + v.slice(-4) : "*".repeat(5),
   revealStart4: (v: string) =>
-    v.length >= 5 ? v.slice(0, 4) + "*".repeat(v.length - 4) : "*".repeat(5)
+    v.length >= 5 ? v.slice(0, 4) + "*".repeat(v.length - 4) : "*".repeat(5),
 };
 
 /**
@@ -224,7 +222,7 @@ export function stdout(hash: Partial<IAwsLog> & { message: string }) {
     payload: hash.payload,
     ...{ local },
     ...rootProps,
-    ...{ context }
+    ...{ context },
   } as IAwsLog;
 
   if (process.env.LOG_TESTING) {
@@ -240,7 +238,7 @@ export function debug(message: string, params: IDictionary = {}) {
     return stdout({
       message: maskMessage(message),
       severity: LogLevel.debug,
-      payload: params
+      payload: params,
     });
   }
 }
@@ -250,7 +248,7 @@ export function info(message: string, params: IDictionary = {}) {
     return stdout({
       message: maskMessage(message),
       severity: LogLevel.info,
-      payload: params
+      payload: params,
     });
   }
 }
@@ -285,7 +283,7 @@ export function warn(message: string, params: IDictionary = {}) {
     return stdout({
       message: maskMessage(message),
       severity: LogLevel.warn,
-      payload: params
+      payload: params,
     });
   }
 }
@@ -313,7 +311,7 @@ export function error(
       : config.error;
 
   const context = getContext();
-  const { message, params, error } = parseErrParameters(
+  const { message, params, theError } = parseErrParameters(
     msgOrError,
     paramsOrErr,
     err
@@ -326,8 +324,8 @@ export function error(
       isError: true,
       payload: {
         params,
-        error
-      }
+        theError,
+      },
     });
   }
 }
@@ -346,18 +344,18 @@ function parseErrParameters(
     ? {
         message: (msgOrError as IErrorWithCode).message as string,
         params: {},
-        error: msgOrError as IErrorWithCode
+        error: msgOrError as IErrorWithCode,
       }
     : isAnError(paramsOrErr)
     ? {
         message: msgOrError as string,
         params: {},
-        error: paramsOrErr as IErrorWithCode
+        error: paramsOrErr as IErrorWithCode,
       }
     : {
         message: msgOrError as string,
         params: paramsOrErr as IDictionary,
-        error: err
+        theError: err,
       };
 }
 
@@ -372,5 +370,5 @@ export const __testAccess__ = {
   maskStrategies,
   setMaskedValues,
   pathBasedMaskingStrategy,
-  maskMessage
+  maskMessage,
 };

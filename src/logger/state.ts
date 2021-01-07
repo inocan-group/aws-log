@@ -32,17 +32,17 @@ const defaultState: IAwsLogState = {
     process.env.NODE_ENV ||
     "unknown") as IEnvStage,
   region: process.env.AWS_REGION || "unknown",
-  severity: undefined
+  severity: undefined,
 };
 
 let archivedState: IAwsLogState;
 let activeState: IAwsLogState = { ...defaultState };
 
-let rootProperties = () =>
+const rootProperties = () =>
   ({
     correlationId: activeState.correlationId,
     stage: activeState.stage || "unknown",
-    region: activeState.region || "unknown"
+    region: activeState.region || "unknown",
   } as Partial<IAwsLog>);
 
 /**
@@ -52,7 +52,7 @@ let rootProperties = () =>
 export function setContext(ctx: IDictionary) {
   activeState["context"] = {
     ...ctx,
-    ...defaultState["context"]
+    ...defaultState["context"],
   };
 
   return loggingApi;
@@ -91,7 +91,7 @@ export const getContext = () => {
       process.env.ENVIRONMENT ||
       process.env.STAGE ||
       process.env.AWS_STAGE ||
-      "unknown"
+      "unknown",
   };
   const context = { ...activeState["context"], ...envContext };
 
@@ -165,7 +165,7 @@ export const contextApi = {
   /** set the context for logging with the Lambda event and context */
   lambda,
   /** allow for reloading context to last known point */
-  reloadContext: restoreState
+  reloadContext: restoreState,
 };
 
 let _sessionSampling: "all" | "none";

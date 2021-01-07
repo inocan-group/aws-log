@@ -6,7 +6,6 @@ import * as yaml from "js-yaml";
 import * as process from "process";
 import "./test-console"; // TS declaration
 import { stdout, stderr } from "test-console";
-import Handlebars = require("handlebars");
 import * as path from "path";
 
 const ENV_FILE = path.join(process.cwd(), "serverless-config", "env.yml");
@@ -38,7 +37,7 @@ export function restoreStdoutAndStderr() {
 }
 
 export async function timeout(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 export function setupEnv() {
@@ -46,16 +45,16 @@ export function setupEnv() {
     process.env.AWS_STAGE = "test";
   }
   const current = process.env;
-  const yamlConfig: IDictionary = yaml.safeLoad(
-    fs.readFileSync(ENV_FILE, "utf8")
+  const yamlConfig: IDictionary = JSON.parse(
+    (yaml.load(fs.readFileSync(ENV_FILE, "utf8")) as string) || ""
   );
   const combined: IDictionary = {
     ...yamlConfig[process.env.AWS_STAGE],
-    ...process.env
+    ...process.env,
   };
 
   console.log(`Loading ENV for "${process.env.AWS_STAGE}"`);
-  Object.keys(combined).forEach(key => (process.env[key] = combined[key]));
+  Object.keys(combined).forEach((key) => (process.env[key] = combined[key]));
   return combined;
 }
 
@@ -169,7 +168,11 @@ export async function loadTemplate(
   file: string,
   replacements: IDictionary = {}
 ) {
-  const text = await loadData(file);
-  const template = Handlebars.compile(text);
-  return template(replacements);
+  let text = fs.readFileSync(file, { encoding: "utf8" });
+  for (const key of Object.keys(replacements)) {
+    const re = new RegExp(key, "gs");
+    text = text.replace(re, replacements[key]);
+  }
+
+  return text;
 }

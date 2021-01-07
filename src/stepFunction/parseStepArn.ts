@@ -33,7 +33,7 @@ function parseFullyQualifiedString(arn: string): IParsedArn {
     account,
     fn: ensureFunctionName(fn),
     stage,
-    appName
+    appName,
   };
 }
 
@@ -43,19 +43,21 @@ function parseFullyQualifiedString(arn: string): IParsedArn {
  * variables.
  */
 function parsePartiallyQualifiedString(fn: string): IParsedArn {
-  let output: IParsedArn = {
+  const output: IParsedArn = {
     ...getEnvironmentVars(),
-    ...{ fn: ensureFunctionName(fn.split(":").pop()) }
+    ...{ fn: ensureFunctionName(fn.split(":").pop()) },
   };
 
-  ["region", "account", "stage", "appName"].forEach((section: keyof IParsedArn) => {
-    if (!output[section]) {
-      output[section] = seek(section, fn);
+  ["region", "account", "stage", "appName"].forEach(
+    (section: keyof IParsedArn) => {
       if (!output[section]) {
-        parsingError(section);
+        output[section] = seek(section, fn);
+        if (!output[section]) {
+          parsingError(section);
+        }
       }
     }
-  });
+  );
 
   return output;
 }
@@ -72,9 +74,12 @@ function parsePartiallyQualifiedString(fn: string): IParsedArn {
  */
 export function getEnvironmentVars() {
   const region =
-    process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || process.env.REGION;
+    process.env.AWS_REGION ||
+    process.env.AWS_DEFAULT_REGION ||
+    process.env.REGION;
   const account = process.env.AWS_ACCOUNT || process.env.AWS_ACCOUNT_ID;
-  const stage = process.env.AWS_STAGE || process.env.ENVIRONMENT || process.env.NODE_ENV;
+  const stage =
+    process.env.AWS_STAGE || process.env.ENVIRONMENT || process.env.NODE_ENV;
   const appName = process.env.SERVICE_NAME || process.env.APP_NAME;
 
   return { region, account, stage, appName };
@@ -84,13 +89,13 @@ const patterns: IDictionary<RegExp> = {
   account: /^[0-9]+$/,
   region: /\s+-\s+-[0-9]/,
   stage: /(prod|stage|test|dev)/,
-  appName: /abc/
+  appName: /abc/,
 };
 
 function seek(pattern: keyof typeof patterns, partialArn: string) {
   const parts = partialArn.split(":");
 
-  parts.forEach(part => {
+  parts.forEach((part) => {
     const regEx = patterns[pattern];
     if (regEx.test(part)) {
       return part;

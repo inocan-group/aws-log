@@ -13,9 +13,7 @@ export interface IParsedArn {
 export function parseArn(arn: string): IParsedArn {
   const isFullyQualified = arn.slice(0, 3) === "arn" ? true : false;
 
-  return isFullyQualified
-    ? parseFullyQualifiedString(arn)
-    : parsePartiallyQualifiedString(arn);
+  return isFullyQualified ? parseFullyQualifiedString(arn) : parsePartiallyQualifiedString(arn);
 }
 
 function parseFullyQualifiedString(arn: string): IParsedArn {
@@ -32,7 +30,7 @@ function parseFullyQualifiedString(arn: string): IParsedArn {
     account,
     fn: ensureFunctionName(fn),
     stage,
-    appName
+    appName,
   };
 }
 
@@ -42,9 +40,9 @@ function parseFullyQualifiedString(arn: string): IParsedArn {
  * variables.
  */
 function parsePartiallyQualifiedString(fn: string): IParsedArn {
-  let output: IParsedArn = {
+  const output: IParsedArn = {
     ...getEnvironmentVars(),
-    ...{ fn: ensureFunctionName(fn.split(":").pop()) }
+    ...{ fn: ensureFunctionName(fn.split(":").pop()) },
   };
 
   ["region", "account", "stage", "appName"].forEach((section: keyof IParsedArn) => {
@@ -80,13 +78,13 @@ const patterns: IDictionary<RegExp> = {
   account: /^[0-9]+$/,
   region: /\s+-\s+-[0-9]/,
   stage: /(prod|stage|test|dev)/,
-  appName: /[\s]+[-\s]*/
+  appName: /[\s]+[-\s]*/,
 };
 
 function seek(pattern: keyof typeof patterns, partialArn: string) {
   const parts = partialArn.split(":");
 
-  parts.forEach(part => {
+  parts.forEach((part) => {
     const regEx = patterns[pattern];
     if (regEx.test(part)) {
       return part;
