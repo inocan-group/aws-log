@@ -9,3 +9,4 @@ lib_test
 .vagrant/
 serverless-package/
 .sync/
+lib/*
