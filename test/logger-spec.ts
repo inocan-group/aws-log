@@ -155,6 +155,21 @@ describe("Logger Basics", () => {
       expect(ctx[prop]).to.be.a("string");
     });
   });
+
+  it("Using random stage should use dev stage defaultConfig", () => {
+    process.env.AWS_STAGE = "dev";
+    const log = logger().lambda(lambdaEvent, lambdaContext, { baz: "test" }); 
+    const infoLogResult = log.info("Test line")
+    const debugLogResult = log.debug("Test line")
+    const warnLogResult = log.warn("Test line")
+    const errorLogResult = log.error("Test line")
+    
+
+    expect(infoLogResult).to.not.be.undefined
+    expect(debugLogResult).to.not.be.undefined
+    expect(warnLogResult).to.not.be.undefined
+    expect(errorLogResult).to.not.be.undefined
+  })
 });
 
 function testLoggingApi(api: any) {
