@@ -51,7 +51,11 @@ export function findCorrelationId(
     return result;
   }
 
-  const body = event?.body ? JSON.parse(event?.body || "") : undefined;
+  const body = event?.body 
+    ? ((typeof event?.body  === "string")
+      ? JSON.parse(event?.body || "") 
+      : event?.body)
+    : undefined;
 
   if (hasHeadersProperty(body)) {
     for (const key of lookIn) {
