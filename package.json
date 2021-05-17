@@ -1,6 +1,6 @@
 {
   "name": "aws-log",
-  "version": "0.11.1",
+  "version": "0.11.2",
   "description": "A logging framework for AWS Lambda",
   "keywords": [
     "serverless",
