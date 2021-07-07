@@ -1,7 +1,7 @@
 # AWS Log
 
 The **aws-log** module is intended for AWS serverless functions to use as their exclusive
-way to write to STDOUT and STDERR. By using using this library you will:
+way to write to STDOUT and STDERR. By using this library you will:
 
 - be assured that all data sent to your logging solution will be as structured JSON string
 - contextual information will be sent along with the details of that log message
@@ -22,7 +22,7 @@ yarn add aws-log
 
 ## Logging
 
-Now that the dependendency is installed you can import it in your code like so:
+Now that the dependency is installed you can import it in your code like so:
 
 ```typescript
 import { logger } from "aws-log";
@@ -75,9 +75,9 @@ While each log message has unique data which you will want to log, there is also
 that when placed next to the specific message can make the data much more searchable and
 thereby more useful. This idea of _context_ will be broken into two parts:
 
-- **Global Context:** context that is relevant for the full execution of the function and
-  and withe paramters you would never expect to be overwritten by the local logging.
-- **Local Context:** context which may only be relavent for a shorter period or _might_
+- **Global Context:** context that is relevant for the full execution of the function
+  and with paramters you would never expect to be overwritten by the local logging.
+- **Local Context:** context which may only be relavant for a shorter period or _might_
   be  
   overwritten by the local logging event.
 
@@ -140,11 +140,11 @@ complete list refer to
 [Lambda Proxy Request](https://github.com/lifegadget/common-types/blob/master/src/aws.ts#L76-L131).
 The quick summary is that it passes the client's "query parameters", "path parameters" and
 "body" of the message. This makes up the distinct "request" that will be considered in
-your functions but it also passes a bunch of variant data about the client such as "what
+your functions, it also passes a bunch of variant data about the client such as "what
 browser?", "which geography?", etc. For a normal lambda-to-lambda function call the
 "event" is exactly what the calling function passed in.
 
-The `context` object is largely the same between the two types of Lambda's mentioned above
+The `context` object is largely the same between the two types of Lambdas mentioned above
 but in both cases provides some useful meta-data for logging. For those interested the
 full typeing is here:
 [IAWSLambaContext](https://github.com/lifegadget/common-types/blob/master/src/aws.ts#L133-L170).
@@ -224,7 +224,7 @@ const log = logger().reloadContext(moreContext);
 ## Correlation ID
 
 The correlation ID -- which shows up as `@x-correlation-id` in the log entry -- is an ID
-who's scope is meant to stay consistent for a whole _graph_ or _fan out_ of function
+whose scope is meant to stay consistent for a whole _graph_ or _fan out_ of function
 executions. This scoping is SUPER useful as within AWS most logging is isolated to a
 single function execution but in a micro-services architecture this often represents too
 narrow a view.
@@ -235,7 +235,7 @@ The way the correlation ID is set is when "context" is provided -- typically via
 API-Gateway, you _can_ pass in this value as part of the request. In fact, it is _often_
 the case that graph of function executions does originate from API-Gateway but even in
 this situation we typically suggest the client does not send in a correlation ID unless
-there is a chain of logging that preceeded this call on the client side. In most cases,
+there is a chain of logging that preceded this call on the client side. In most cases,
 the absence of a correlation ID results in one being created automatically. Once it is
 created though it must be _forwarded_ to all other executions downstream. This is achieved
 via a helper method provided by this library called `invoke`.
@@ -346,7 +346,7 @@ To make it more compact, you can set the following environment variables:
 - Finally, if you provide `AWS_STAGE` then you can leave off the **prod** | **dev** |
   **_etc._** portion.
 
-That means if you do all of the above you only need the following:
+That means if you do all the above you only need the following:
 
 ```typescript
 await invoke("myfunction", { foo: 1, bar: 2 });
@@ -367,7 +367,7 @@ Now if you weren't already sold on why you should be invoking using this more co
 
 ## The `stepFunction` API
 
-[AWS Step Functions](https://aws.amazon.com/step-functions/) are quite useful tool in the
+[AWS Step Functions](https://aws.amazon.com/step-functions/) are a quite useful tool in the
 "serverless toolkit" but they also provide a manner in which many Lambda functions will be
 executed together in concert. For this reason we must ensure that the Correlation ID is
 maintained throughout this fan out. Fortunately this easily achieved with the
@@ -386,7 +386,7 @@ Then in any functions which are involved in the _steps_ of a step function be su
 complete your handler with:
 
 ```typescript
-import { logger, stepFunction } = "aws=log";
+import { logger, stepFunction } from "aws-log";
 
 function handler(event, context, callback) {
   const log = logger().lambda(event, context);
